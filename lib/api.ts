@@ -20,6 +20,13 @@ export interface Place {
   distance: number
   phone?: string
   website?: string
+  /** Google Place ID — used to build directions deep links and Maps Embed URLs */
+  place_id?: string
+  /** WGS-84 latitude — required for Static Maps pin rendering */
+  lat?: number
+  /** WGS-84 longitude — required for Static Maps pin rendering */
+  lng?: number
+  /** Fallback directions URL when place_id is absent */
   directions_url?: string
   insurance_accepted: string[]
 }

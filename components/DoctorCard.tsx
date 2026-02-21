@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Place, TrackEventType, trackEvent } from '@/lib/api'
+import { buildDirectionsUrl, buildEmbedUrl } from '@/lib/maps'
 import { formatDistance, formatRating } from '@/lib/utils'
 
 interface DoctorCardProps {
@@ -9,11 +11,16 @@ interface DoctorCardProps {
 }
 
 export default function DoctorCard({ place, insurance }: DoctorCardProps) {
+  const [showMap, setShowMap] = useState(false)
+
   const hasInsurance =
     insurance &&
     place.insurance_accepted.some(
       (i) => i.toLowerCase() === insurance.toLowerCase()
     )
+
+  const directionsUrl = buildDirectionsUrl(place)
+  const embedUrl = buildEmbedUrl(place)
 
   async function handleTrack(type: TrackEventType) {
     await trackEvent(type, { place_id: place.id })
@@ -31,7 +38,10 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
 
         <div className="flex-shrink-0 text-right">
           {place.rating > 0 && (
-            <p className="text-sm font-medium text-text-primary" aria-label={`Rating: ${formatRating(place.rating)} out of 5`}>
+            <p
+              className="text-sm font-medium text-text-primary"
+              aria-label={`Rating: ${formatRating(place.rating)} out of 5`}
+            >
               ★ {formatRating(place.rating)}
             </p>
           )}
@@ -64,9 +74,10 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
           </a>
         )}
 
-        {place.directions_url && (
+        {/* Directions: deep link to https://www.google.com/maps/place/?q=place_id=... */}
+        {directionsUrl && (
           <a
-            href={place.directions_url}
+            href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => handleTrack('directions_click')}
@@ -75,6 +86,18 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
           >
             Get Directions
           </a>
+        )}
+
+        {/* Open Map: toggles a Maps Embed API iframe for this clinic */}
+        {embedUrl && (
+          <button
+            onClick={() => setShowMap((v) => !v)}
+            className="inline-flex items-center rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            aria-expanded={showMap}
+            aria-label={showMap ? `Close map for ${place.name}` : `Open map for ${place.name}`}
+          >
+            {showMap ? 'Close Map' : 'Open Map'}
+          </button>
         )}
 
         {place.website && (
@@ -90,6 +113,22 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
           </a>
         )}
       </div>
+
+      {/* Maps Embed API iframe — free, shown on demand */}
+      {showMap && embedUrl && (
+        <div className="mt-3 -mx-5 -mb-5 border-t border-gray-100 overflow-hidden rounded-b">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="260"
+            className="block border-0"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={`Map for ${place.name}`}
+          />
+        </div>
+      )}
     </article>
   )
 }

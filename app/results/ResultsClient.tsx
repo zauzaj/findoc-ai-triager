@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { searchPlaces, trackEvent, Place } from '@/lib/api'
 import DoctorCard from '@/components/DoctorCard'
+import StaticMapPreview from '@/components/StaticMapPreview'
 import UrgencyBanner from '@/components/UrgencyBanner'
 
 interface ResultsClientProps {
@@ -84,6 +85,9 @@ export default function ResultsClient({
       {urgency && urgency !== 'low' && (
         <UrgencyBanner urgency={urgency} />
       )}
+
+      {/* Static Maps API — multi-pin overview, top of results */}
+      <StaticMapPreview places={places} userLat={lat} userLng={lng} />
 
       <p className="text-xs text-text-muted">
         {places.length} clinic{places.length !== 1 ? 's' : ''} found
