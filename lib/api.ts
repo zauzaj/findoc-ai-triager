@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
+// Internal Next.js API routes by default — they add caching + persistence.
+// Override with NEXT_PUBLIC_API_BASE_URL only for testing against an external backend directly.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api'
 
 export interface NavigateRequest {
   symptoms: string
