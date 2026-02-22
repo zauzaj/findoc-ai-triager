@@ -17,7 +17,7 @@ export default function InsuranceSelect({
     <div>
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-text-primary mb-1"
+        className="block text-sm font-medium text-text-label mb-1"
       >
         Insurance provider <span className="text-text-muted font-normal">(optional)</span>
       </label>

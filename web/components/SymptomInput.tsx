@@ -34,7 +34,7 @@ export default function SymptomInput() {
       <div className="mb-4">
         <label
           htmlFor="symptoms"
-          className="block text-sm font-medium text-text-primary mb-2"
+          className="block text-sm font-medium text-text-label mb-2"
         >
           Describe your symptoms
         </label>

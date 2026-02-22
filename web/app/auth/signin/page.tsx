@@ -45,7 +45,7 @@ export default function SignInPage() {
           </div>
         ) : (
           <form onSubmit={handleMagicLink} noValidate>
-            <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-text-label mb-1">
               Email address
             </label>
             <input

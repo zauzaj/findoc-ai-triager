@@ -8,7 +8,7 @@ export default function Navbar() {
   const { user, signOut } = useAuth()
 
   return (
-    <header className="bg-primary-blue sticky top-0 z-50">
+    <header className="bg-primary-header sticky top-0 z-50">
       <nav
         className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between"
         aria-label="Main navigation"

@@ -10,9 +10,10 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          blue:         '#0c84a3', // teal primary — matches patient-app default button
+          blue:         '#0c84a3', // button teal — matches patient-app App.css `button { background-color }`
           'blue-hover': '#0a6d87', // darkened teal for hover states
-          green:        '#08c6aa', // teal-green accent
+          header:       '#00a9b7', // navbar/header teal — matches patient-app styled-component Header bg
+          green:        '#08c6aa', // teal-green accent — matches patient-app pricing card border
           orange:         '#f8931d', // CTA orange — matches patient-app .btn-orange
           'orange-hover': '#df7d0a', // darkened orange for hover states
         },
@@ -48,6 +49,7 @@ const config: Config = {
         },
         background:   '#F9FBFD',
         'text-primary': '#1F2937',
+        'text-label':   '#435f71', // form label / dropdown text — matches patient-app AppSelect + TextInput
         'text-muted':   '#6B7280',
         'brand-border': '#c0ccd1', // input/form border
       },
