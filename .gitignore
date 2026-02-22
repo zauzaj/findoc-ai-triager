@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma — SQLite database files (generated locally, not committed)
+prisma/*.db
+prisma/*.db-journal
+prisma/prisma/
