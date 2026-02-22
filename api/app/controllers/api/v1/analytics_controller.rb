@@ -39,11 +39,15 @@ module Api
         properties = params.to_unsafe_h.except(*reserved)
         properties["timestamp"] = params[:timestamp] || Time.current.iso8601
 
+        # place_id is a first-class column for clinic-level JOIN queries
+        place_id = params[:place_id].presence || properties.delete("place_id")
+
         AnalyticsEvent.create!(
           event_name:   event_name,
           anonymous_id: anonymous_id,
           user_id:      current_user&.id,
           language:     language,
+          place_id:     place_id,
           properties:   properties
         )
 

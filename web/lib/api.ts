@@ -54,6 +54,17 @@ export interface TrackEventPayload {
   source?: string
 }
 
+export interface PlanFeatures {
+  /** Monthly navigation cap; 0 = unlimited */
+  nav_limit_monthly:  number
+  /** Clinic results shown per search; 0 = unlimited */
+  result_limit:       number
+  can_save_doctors:   boolean
+  can_view_history:   boolean
+  /** Monthly price in AED */
+  price_aed:          number
+}
+
 export interface AuthUser {
   id: number
   email: string
@@ -65,6 +76,10 @@ export interface AuthUser {
   emirate?: string
   navigations_this_month?: number
   ls_subscription_status?: string
+  /** ISO timestamp when current billing period (or grace period) ends */
+  subscription_ends_at?: string
+  /** Server-driven plan limits — use these instead of hardcoded constants */
+  plan_features?: PlanFeatures
 }
 
 export interface NavigationSession {

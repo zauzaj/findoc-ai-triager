@@ -8,9 +8,14 @@ class User < ApplicationRecord
   validates :locale,   inclusion: { in: LOCALES }
   validates :provider, inclusion: { in: PROVIDERS }
 
+  belongs_to :current_plan, class_name: "Plan", optional: true
+
+  has_many :subscriptions
   has_many :navigation_sessions
   has_many :lead_events
   has_many :saved_places
+
+  FREE_NAV_LIMIT = 3
 
   def self.from_google(payload)
     uid = payload["sub"]
@@ -40,21 +45,33 @@ class User < ApplicationRecord
     plan == "premium"
   end
 
-  FREE_NAV_LIMIT = 3
-
   # The server never blocks navigation — enforcement is UI-only.
-  # This is a reference method used for data / analytics.
   def navigation_limit_reached?
     plan == "free" && navigations_this_month >= FREE_NAV_LIMIT
   end
 
-  # True while subscription is paid and active (not yet cancelled/expired)
-  def subscription_active?
-    %w[active trialing].include?(ls_subscription_status)
+  # Returns the most recent subscription record, regardless of status.
+  def latest_subscription
+    subscriptions.recent.first
   end
 
-  # True when patient cancelled but still within their paid period
+  # Returns the active or trialing subscription, if any.
+  def active_subscription
+    subscriptions.active_or_trialing.recent.first
+  end
+
+  # True while subscription is paid and access has not expired.
+  def subscription_active?
+    active_subscription.present?
+  end
+
+  # True when user cancelled but is still within the paid period.
   def subscription_cancelling?
-    ls_subscription_status == "cancelled" && premium?
+    latest_subscription&.cancelling?
+  end
+
+  # Derived subscription status for API responses (mirrors the latest sub record).
+  def ls_subscription_status
+    latest_subscription&.status
   end
 end

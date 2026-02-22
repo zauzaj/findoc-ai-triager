@@ -70,6 +70,8 @@ module Api
       end
 
       def user_json(user)
+        plan = user.current_plan || Plan.find_by(slug: user.plan)
+        sub  = user.latest_subscription
         {
           id:                      user.id,
           email:                   user.email,
@@ -80,7 +82,17 @@ module Api
           insurance_provider:      user.insurance_provider,
           emirate:                 user.emirate,
           navigations_this_month:  user.navigations_this_month,
-          ls_subscription_status:  user.ls_subscription_status
+          # Subscription state
+          ls_subscription_status:  sub&.status,
+          subscription_ends_at:    sub&.expires_at,
+          # Plan feature flags — lets the frontend enforce limits from the server
+          plan_features: {
+            nav_limit_monthly:    plan&.nav_limit_monthly   || 3,
+            result_limit:         plan&.result_limit         || 10,
+            can_save_doctors:     plan&.can_save_doctors     || false,
+            can_view_history:     plan&.can_view_history     || false,
+            price_aed:            plan&.price_aed            || 0.0,
+          }
         }
       end
     end
