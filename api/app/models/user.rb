@@ -36,7 +36,21 @@ class User < ApplicationRecord
     update!(magic_link_token: nil, magic_link_expires_at: nil)
   end
 
+  def premium?
+    plan == "premium"
+  end
+
   def navigation_limit_reached?
     plan == "free" && navigations_this_month >= 10
+  end
+
+  # True while subscription is paid and active (not yet cancelled/expired)
+  def subscription_active?
+    %w[active trialing].include?(ls_subscription_status)
+  end
+
+  # True when patient cancelled but still within their paid period
+  def subscription_cancelling?
+    ls_subscription_status == "cancelled" && premium?
   end
 end

@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Lemon Squeezy webhooks — outside api/v1 namespace, no JWT auth, HMAC-verified
+  post "webhooks/lemon_squeezy", to: "webhooks#lemon_squeezy"
+
   namespace :api do
     namespace :v1 do
       # Auth
@@ -30,6 +33,9 @@ Rails.application.routes.draw do
       post "tracking/phone_click",     to: "tracking#phone_click"
       post "tracking/directions",      to: "tracking#directions"
       post "tracking/website",         to: "tracking#website"
+
+      # Billing — Lemon Squeezy checkout
+      post "billing/checkout",         to: "billing#checkout"
     end
   end
 end

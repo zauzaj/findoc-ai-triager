@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SITE_NAME } from '@/lib/constants'
 import InstallPrompt from '@/components/InstallPrompt'
+import UpgradeBanner from '@/components/UpgradeBanner'
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex flex-col min-h-screen bg-background font-sans">
         <AuthProvider>
           <Navbar />
+          <UpgradeBanner />
           <main className="flex-1">{children}</main>
           <Footer />
           <InstallPrompt />

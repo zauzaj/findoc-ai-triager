@@ -61,6 +61,8 @@ export interface AuthUser {
   locale: 'en' | 'ar'
   insurance_provider?: string
   emirate?: string
+  navigations_this_month?: number
+  ls_subscription_status?: string
 }
 
 export interface NavigationSession {
@@ -213,4 +215,17 @@ export async function trackEvent(
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   }).catch(() => {}) // fire-and-forget, never throw
+}
+
+// ── Billing ────────────────────────────────────────────────────────────────
+
+/** Creates a Lemon Squeezy hosted-checkout session and returns the redirect URL. */
+export async function createCheckout(token: string): Promise<string> {
+  const res = await fetch(`${API}/billing/checkout`, {
+    method: 'POST',
+    headers: authHeaders(token),
+  })
+  if (!res.ok) throw new Error('Failed to create checkout session')
+  const data = await res.json()
+  return data.checkout_url
 }

@@ -52,14 +52,16 @@ module Api
 
       def user_json(user)
         {
-          id:                user.id,
-          email:             user.email,
-          name:              user.name,
-          avatar_url:        user.avatar_url,
-          plan:              user.plan,
-          locale:            user.locale,
-          insurance_provider: user.insurance_provider,
-          emirate:           user.emirate
+          id:                      user.id,
+          email:                   user.email,
+          name:                    user.name,
+          avatar_url:              user.avatar_url,
+          plan:                    user.plan,
+          locale:                  user.locale,
+          insurance_provider:      user.insurance_provider,
+          emirate:                 user.emirate,
+          navigations_this_month:  user.navigations_this_month,
+          ls_subscription_status:  user.ls_subscription_status
         }
       end
     end
