@@ -22,11 +22,13 @@ interface ResultsPageProps {
     lng?: string
     insurance?: string
     urgency?: string
+    /** Server-side nav count after this navigation (passed from /navigate for signed-in users) */
+    nav_count?: string
   }
 }
 
 export default function ResultsPage({ searchParams }: ResultsPageProps) {
-  const { specialist = '', lat, lng, insurance, urgency } = searchParams
+  const { specialist = '', lat, lng, insurance, urgency, nav_count } = searchParams
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
@@ -55,6 +57,7 @@ export default function ResultsPage({ searchParams }: ResultsPageProps) {
         lng={lng}
         insurance={insurance}
         urgency={urgency}
+        serverNavCount={nav_count ? parseInt(nav_count, 10) : undefined}
       />
     </div>
   )

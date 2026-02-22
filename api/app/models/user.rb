@@ -40,8 +40,12 @@ class User < ApplicationRecord
     plan == "premium"
   end
 
+  FREE_NAV_LIMIT = 3
+
+  # The server never blocks navigation — enforcement is UI-only.
+  # This is a reference method used for data / analytics.
   def navigation_limit_reached?
-    plan == "free" && navigations_this_month >= 10
+    plan == "free" && navigations_this_month >= FREE_NAV_LIMIT
   end
 
   # True while subscription is paid and active (not yet cancelled/expired)

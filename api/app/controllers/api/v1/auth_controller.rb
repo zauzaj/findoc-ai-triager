@@ -1,7 +1,7 @@
 module Api
   module V1
     class AuthController < ApplicationController
-      before_action :authenticate!, only: [:me]
+      before_action :authenticate!, only: [:me, :merge_anonymous]
 
       def google
         id_token = params.require(:id_token)
@@ -41,6 +41,25 @@ module Api
       end
 
       def me
+        render json: { user: user_json(current_user) }
+      end
+
+      # POST /auth/merge_anonymous
+      # Transfers the anonymous visitor's navigation count into the signed-in account.
+      # Takes max(current server count, anonymous_count) — never resets on sign-in.
+      def merge_anonymous
+        anon_count = params[:anonymous_count].to_i
+        return render json: { user: user_json(current_user) } if anon_count <= 0
+
+        # Reset counter if new month first
+        now      = Time.current
+        reset_at = current_user.navigations_reset_at
+        if reset_at.nil? || reset_at.year != now.year || reset_at.month != now.month
+          current_user.update_columns(navigations_this_month: 0, navigations_reset_at: now)
+        end
+
+        merged = [current_user.navigations_this_month, anon_count].max
+        current_user.update!(navigations_this_month: merged)
         render json: { user: user_json(current_user) }
       end
 

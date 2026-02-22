@@ -8,18 +8,28 @@ import { verifyMagicLink } from '@/lib/api'
 function VerifyInner() {
   const router       = useRouter()
   const params       = useSearchParams()
-  const { setAuth }  = useAuth()
+  const { setAuth, needsOnboarding } = useAuth()
   const [status, setStatus] = useState<'verifying' | 'error'>('verifying')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    const token = params.get('token')
+    const token    = params.get('token')
+    const returnTo = params.get('return_to') ?? '/profile'
+
     if (!token) { setStatus('error'); setMessage('Missing token.'); return }
 
     verifyMagicLink(token)
-      .then(({ token: jwt, user }) => {
-        setAuth(jwt, user)
-        router.replace('/profile')
+      .then(async ({ token: jwt, user }) => {
+        await setAuth(jwt, user)
+        // setAuth sets needsOnboarding — but state updates are async.
+        // Determine directly from the user payload.
+        const isNew = !user.emirate
+        if (isNew) {
+          const onboardingReturn = encodeURIComponent(returnTo)
+          router.replace(`/onboarding?return_to=${onboardingReturn}`)
+        } else {
+          router.replace(returnTo)
+        }
       })
       .catch(() => {
         setStatus('error')

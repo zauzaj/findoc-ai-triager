@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { createCheckout } from '@/lib/api'
-
-const FREE_LIMIT = 10
+import { FREE_NAV_LIMIT, UPGRADE_PRICE_AED } from '@/lib/constants'
 
 export default function ProfilePage() {
   const { user, token, loading, signOut } = useAuth()
@@ -23,7 +22,6 @@ export default function ProfilePage() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('upgraded') === '1') {
       setUpgraded(true)
-      // Remove the query param from the URL without a reload
       window.history.replaceState({}, '', '/profile')
     }
   }, [])
@@ -36,10 +34,10 @@ export default function ProfilePage() {
     )
   }
 
-  const isPremium   = user.plan === 'premium'
-  const used        = user.navigations_this_month ?? 0
-  const remaining   = Math.max(0, FREE_LIMIT - used)
-  const cancelling  = user.ls_subscription_status === 'cancelled' && isPremium
+  const isPremium  = user.plan === 'premium'
+  const used       = user.navigations_this_month ?? 0
+  const remaining  = Math.max(0, FREE_NAV_LIMIT - used)
+  const cancelling = user.ls_subscription_status === 'cancelled' && isPremium
 
   async function handleUpgrade() {
     if (!token) return
@@ -65,7 +63,7 @@ export default function ProfilePage() {
           <div>
             <p className="font-semibold text-primary-blue text-sm">Welcome to Premium!</p>
             <p className="text-xs text-text-muted mt-0.5">
-              Your plan has been upgraded. Unlimited specialist guidance is now unlocked.
+              Unlimited navigations and the full clinic list are now unlocked.
             </p>
           </div>
         </div>
@@ -79,6 +77,11 @@ export default function ProfilePage() {
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-text-primary truncate">{user.name ?? 'No name'}</p>
           <p className="text-sm text-text-muted truncate">{user.email}</p>
+          {user.emirate && (
+            <p className="text-xs text-text-muted">
+              {user.emirate}{user.insurance_provider ? ` · ${user.insurance_provider}` : ''}
+            </p>
+          )}
           <span
             className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${
               isPremium
@@ -86,7 +89,7 @@ export default function ProfilePage() {
                 : 'bg-soft-blue text-primary-blue'
             }`}
           >
-            {isPremium ? '⚡ Premium' : 'Free plan'}
+            {isPremium ? 'Premium' : 'Free plan'}
           </span>
         </div>
       </div>
@@ -100,8 +103,8 @@ export default function ProfilePage() {
             <div>
               <p className="text-sm text-text-muted">
                 {cancelling
-                  ? 'Your subscription is cancelled and will expire at the end of this billing period.'
-                  : 'Unlimited AI-guided specialist recommendations, every month.'}
+                  ? 'Your subscription is cancelled and will expire at the end of this billing period. Premium access continues until then.'
+                  : 'Unlimited navigations and full clinic lists for your insurance network.'}
               </p>
             </div>
             {cancelling && (
@@ -110,7 +113,7 @@ export default function ProfilePage() {
                 disabled={checkoutLoading}
                 className="rounded bg-primary-orange px-4 py-2 text-xs font-semibold text-white hover:bg-primary-orange-hover transition-colors disabled:opacity-60"
               >
-                {checkoutLoading ? 'Loading…' : 'Reactivate'}
+                {checkoutLoading ? 'Loading…' : `Reactivate — AED ${UPGRADE_PRICE_AED}/mo`}
               </button>
             )}
           </div>
@@ -119,7 +122,7 @@ export default function ProfilePage() {
             {/* Usage bar */}
             <div className="mb-4">
               <div className="flex justify-between text-xs text-text-muted mb-1.5">
-                <span>{used} of {FREE_LIMIT} searches used this month</span>
+                <span>{used} of {FREE_NAV_LIMIT} navigations used this month</span>
                 <span>{remaining} remaining</span>
               </div>
               <div className="h-2 rounded-full bg-surface-subtle overflow-hidden">
@@ -127,7 +130,7 @@ export default function ProfilePage() {
                   className={`h-full rounded-full transition-all duration-500 ${
                     remaining === 0 ? 'bg-status-error-text' : 'bg-primary-blue'
                   }`}
-                  style={{ width: `${Math.min(100, (used / FREE_LIMIT) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (used / FREE_NAV_LIMIT) * 100)}%` }}
                 />
               </div>
             </div>
@@ -136,18 +139,21 @@ export default function ProfilePage() {
             <div className="rounded border border-soft-blue bg-soft-blue p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-primary-blue">Upgrade to Premium</p>
-                <p className="text-xs text-text-muted mt-0.5">
-                  Unlimited searches · Priority AI · Early access to new features
-                </p>
+                <ul className="text-xs text-text-muted mt-0.5 space-y-0.5">
+                  <li>Unlimited navigations every month</li>
+                  <li>Full clinic list for your insurance network</li>
+                  <li>Save doctors + full navigation history</li>
+                </ul>
               </div>
               <button
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
                 className="rounded bg-primary-orange px-5 py-2 text-sm font-semibold text-white hover:bg-primary-orange-hover transition-colors disabled:opacity-60 flex-shrink-0"
               >
-                {checkoutLoading ? 'Opening checkout…' : '⚡ Go Premium'}
+                {checkoutLoading ? 'Opening checkout…' : `AED ${UPGRADE_PRICE_AED}/month`}
               </button>
             </div>
+            <p className="text-xs text-text-muted mt-2">No contracts. Cancel anytime.</p>
           </>
         )}
       </div>
@@ -155,17 +161,27 @@ export default function ProfilePage() {
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         {[
-          { href: '/profile/history', label: 'Search history',  emoji: '🔍' },
-          { href: '/profile/saved',   label: 'Saved clinics',   emoji: '❤️' },
-          { href: '/profile/called',  label: 'Called clinics',  emoji: '📞' },
-        ].map(({ href, label, emoji }) => (
+          { href: '/profile/history', label: 'Search history', emoji: '🔍', premiumOnly: true },
+          { href: '/profile/saved',   label: 'Saved clinics',  emoji: '❤️', premiumOnly: true },
+          { href: '/profile/called',  label: 'Called clinics', emoji: '📞', premiumOnly: false },
+        ].map(({ href, label, emoji, premiumOnly }) => (
           <Link
             key={href}
-            href={href}
-            className="bg-white rounded border-2 border-card-border p-4 shadow-card hover:border-primary-blue transition-[border-color] duration-300 flex items-center gap-3"
+            href={premiumOnly && !isPremium ? '#' : href}
+            onClick={premiumOnly && !isPremium ? (e) => { e.preventDefault(); handleUpgrade() } : undefined}
+            className={`bg-white rounded border-2 border-card-border p-4 shadow-card flex items-center gap-3 transition-[border-color] duration-300 ${
+              premiumOnly && !isPremium
+                ? 'opacity-60 cursor-pointer hover:border-primary-orange'
+                : 'hover:border-primary-blue'
+            }`}
           >
             <span className="text-2xl">{emoji}</span>
-            <span className="text-sm font-medium text-text-primary">{label}</span>
+            <div className="min-w-0">
+              <span className="text-sm font-medium text-text-primary block">{label}</span>
+              {premiumOnly && !isPremium && (
+                <span className="text-xs text-text-muted">Premium only</span>
+              )}
+            </div>
           </Link>
         ))}
       </div>

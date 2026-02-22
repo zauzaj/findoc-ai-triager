@@ -39,3 +39,18 @@ export const SITE_NAME = 'Findoc UAE'
 export const SITE_URL = 'https://findoc.ae'
 export const SITE_DESCRIPTION =
   'Independent health navigation platform for the UAE. Find the right specialist for your symptoms.'
+
+// ── Plan limits ─────────────────────────────────────────────────────────────
+/** Free users get 3 AI navigations per calendar month. */
+export const FREE_NAV_LIMIT = 3
+/** Free users see the first 10 insurance-matched clinic results. */
+export const FREE_RESULT_LIMIT = 10
+/** Monthly Premium price in AED. */
+export const UPGRADE_PRICE_AED = '18.99'
+
+// ── Geography ────────────────────────────────────────────────────────────────
+export const UAE_EMIRATES = ['Dubai', 'Abu Dhabi', 'Sharjah', 'Other'] as const
+export type Emirate = (typeof UAE_EMIRATES)[number]
+
+// ── Insurer list (for onboarding — includes self-pay) ────────────────────────
+export const INSURERS_WITH_NONE = [...INSURERS, 'No insurance / Self-pay'] as const

@@ -17,6 +17,8 @@ export interface NavigateResponse {
   urgency: string
   confidence: number
   explanation: string
+  /** Server-side navigation count after this navigation (signed-in users only) */
+  navigations_this_month?: number
 }
 
 export interface Place {
@@ -215,6 +217,41 @@ export async function trackEvent(
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   }).catch(() => {}) // fire-and-forget, never throw
+}
+
+// ── Users ──────────────────────────────────────────────────────────────────
+
+export async function updateProfile(
+  token: string,
+  data: { emirate?: string; insurance_provider?: string; locale?: string }
+): Promise<AuthUser> {
+  const res = await fetch(`${API}/users/me`, {
+    method: 'PATCH',
+    headers: authHeaders(token),
+    body: JSON.stringify({ user: data }),
+  })
+  if (!res.ok) throw new Error('Failed to update profile')
+  const json = await res.json()
+  return json.user
+}
+
+/**
+ * Transfers the anonymous navigation count into the signed-in account.
+ * Called immediately after sign-in when the anonymous count > 0.
+ * The server takes max(current, anonymous_count).
+ */
+export async function mergeAnonymousCount(
+  token: string,
+  anonymous_count: number
+): Promise<AuthUser> {
+  const res = await fetch(`${API}/auth/merge_anonymous`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ anonymous_count }),
+  })
+  if (!res.ok) throw new Error('Failed to merge anonymous count')
+  const json = await res.json()
+  return json.user
 }
 
 // ── Billing ────────────────────────────────────────────────────────────────

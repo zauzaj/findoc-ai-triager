@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { navigate, NavigateResponse } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
 import SpecialistCard from '@/components/SpecialistCard'
 import UrgencyBanner from '@/components/UrgencyBanner'
 import InsuranceSelect from '@/components/InsuranceSelect'
@@ -17,6 +18,7 @@ export default function NavigateClient({
   initialInsurance,
 }: NavigateClientProps) {
   const router = useRouter()
+  const { token } = useAuth()
   const [result, setResult] = useState<NavigateResponse | null>(null)
   const [insurance, setInsurance] = useState(initialInsurance)
   const [loading, setLoading] = useState(true)
@@ -27,7 +29,8 @@ export default function NavigateClient({
       setLoading(true)
       setError('')
       try {
-        const data = await navigate(symptoms, insurance || undefined)
+        // Pass token so signed-in users get their server count incremented
+        const data = await navigate(symptoms, insurance || undefined, token)
         setResult(data)
       } catch {
         setError('Unable to process your request. Please try again.')
@@ -42,12 +45,14 @@ export default function NavigateClient({
       setLoading(false)
       setError('No symptoms provided. Please go back and describe your symptoms.')
     }
-  }, [symptoms, insurance])
+  }, [symptoms, insurance]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleFindClinics() {
     if (!result) return
     const params = new URLSearchParams({ specialist: result.specialist })
-    if (insurance) params.set('insurance', insurance)
+    if (insurance)                              params.set('insurance', insurance)
+    if (result.urgency)                         params.set('urgency', result.urgency)
+    if (result.navigations_this_month != null)  params.set('nav_count', String(result.navigations_this_month))
     router.push(`/results?${params.toString()}`)
   }
 

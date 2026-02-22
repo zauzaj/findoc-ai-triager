@@ -28,12 +28,20 @@ module Api
           ]
         )
 
+        # Increment monthly counter for signed-in users.
+        # Anonymous users are counted client-side in localStorage.
+        if current_user
+          reset_monthly_counter_if_needed!(current_user)
+          current_user.increment!(:navigations_this_month)
+        end
+
         render json: {
-          session_token: session.session_token,
-          specialist:    result[:specialist],
-          urgency:       result[:urgency],
-          confidence:    result[:confidence],
-          explanation:   result[:explanation]
+          session_token:          session.session_token,
+          specialist:             result[:specialist],
+          urgency:                result[:urgency],
+          confidence:             result[:confidence],
+          explanation:            result[:explanation],
+          navigations_this_month: current_user&.navigations_this_month
         }
       rescue => e
         Rails.logger.error "[navigate#create] #{e.class}: #{e.message}"
@@ -49,6 +57,15 @@ module Api
       end
 
       private
+
+      # Resets navigations_this_month to 0 when a new calendar month begins.
+      def reset_monthly_counter_if_needed!(user)
+        now      = Time.current
+        reset_at = user.navigations_reset_at
+        if reset_at.nil? || reset_at.year != now.year || reset_at.month != now.month
+          user.update_columns(navigations_this_month: 0, navigations_reset_at: now)
+        end
+      end
 
       def session_json(s)
         {

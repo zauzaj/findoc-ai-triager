@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       post "auth/magic_link",          to: "auth#magic_link"
       get  "auth/magic_link_verify",   to: "auth#magic_link_verify"
       get  "auth/me",                  to: "auth#me"
+      post "auth/merge_anonymous",     to: "auth#merge_anonymous"
 
       # Navigation
       post "navigate",                 to: "navigate#create"
@@ -33,6 +34,9 @@ Rails.application.routes.draw do
       post "tracking/phone_click",     to: "tracking#phone_click"
       post "tracking/directions",      to: "tracking#directions"
       post "tracking/website",         to: "tracking#website"
+
+      # Users — profile updates (onboarding)
+      patch "users/me",               to: "users#update"
 
       # Billing — Lemon Squeezy checkout
       post "billing/checkout",         to: "billing#checkout"

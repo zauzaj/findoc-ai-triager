@@ -3,9 +3,9 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { NavigationProvider } from '@/contexts/NavigationContext'
 import { SITE_NAME } from '@/lib/constants'
 import InstallPrompt from '@/components/InstallPrompt'
-import UpgradeBanner from '@/components/UpgradeBanner'
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
@@ -39,11 +39,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="flex flex-col min-h-screen bg-background font-sans">
         <AuthProvider>
-          <Navbar />
-          <UpgradeBanner />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <InstallPrompt />
+          <NavigationProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <InstallPrompt />
+          </NavigationProvider>
         </AuthProvider>
       </body>
     </html>
