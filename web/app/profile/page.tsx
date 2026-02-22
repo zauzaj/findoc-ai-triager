@@ -6,9 +6,11 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { createCheckout } from '@/lib/api'
 import { FREE_NAV_LIMIT, UPGRADE_PRICE_AED } from '@/lib/constants'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 export default function ProfilePage() {
   const { user, token, loading, signOut } = useAuth()
+  const { track } = useAnalytics()
   const router = useRouter()
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [upgraded, setUpgraded] = useState(false)
@@ -22,6 +24,7 @@ export default function ProfilePage() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('upgraded') === '1') {
       setUpgraded(true)
+      track('checkout_completed', { plan_type: 'premium', price_aed: UPGRADE_PRICE_AED })
       window.history.replaceState({}, '', '/profile')
     }
   }, [])

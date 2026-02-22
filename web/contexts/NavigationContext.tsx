@@ -1,16 +1,15 @@
 'use client'
 
 /**
- * NavigationContext — tracks how many navigations the current visitor has
- * completed this month, and what banners/modals should be shown after results.
+ * NavigationContext — tracks nav count and which prompt to show after results.
  *
- * Rules (from product spec):
- *   - Anonymous users: counter lives in localStorage, resets 1st of month
- *   - Signed-in free users: server counter (navigations_this_month) is truth
- *   - On sign-in: anonymous count merges into server count (never resets)
- *   - Premium users: unlimited — no banners, no modals
- *
- * The "increment" happens after results load — not when the user submits symptoms.
+ * Rules:
+ *   - Anonymous: counter in localStorage, resets 1st of month
+ *   - Signed-in free: server counter is truth
+ *   - Premium: no prompts, no limits
+ *   - On sign-in: anonymous count merges into server (never resets)
+ *   - 24h cooldown: after upgrade modal is dismissed, suppress it for 24 hours
+ *     then fire 'upgrade_modal_suppressed' event (not 'upgrade')
  */
 
 import {
@@ -20,67 +19,82 @@ import {
 import { getAnonNavCount, incrementAnonNavCount } from '@/lib/visitorTracking'
 import { FREE_NAV_LIMIT } from '@/lib/constants'
 
+const COOLDOWN_KEY    = 'findoc_upgrade_dismissed_at'
+const COOLDOWN_MS     = 24 * 60 * 60 * 1000 // 24 hours
+
 export type NavPromptVariant =
-  | 'none'       // no prompt
-  | 'auth-1'     // soft ask after nav #1
-  | 'auth-2'     // warmer ask after nav #2
-  | 'auth-3'     // strongest ask after nav #3
-  | 'upgrade'    // upgrade modal after nav #4+
+  | 'none'             // no prompt
+  | 'auth-1'           // soft ask after nav #1  (anonymous only)
+  | 'auth-2'           // warmer ask after nav #2 (anonymous only)
+  | 'auth-3'           // strongest ask after nav #3 (anonymous only)
+  | 'lapsed-premium'   // returning lapsed-premium user nudge after nav #3
+  | 'upgrade'          // upgrade modal after nav #4+ (both anonymous + free signed-in)
+
+function isUpgradeCoolingDown(): boolean {
+  if (typeof window === 'undefined') return false
+  const stored = localStorage.getItem(COOLDOWN_KEY)
+  if (!stored) return false
+  return Date.now() - parseInt(stored, 10) < COOLDOWN_MS
+}
+
+function setUpgradeCooldown(): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(COOLDOWN_KEY, String(Date.now()))
+}
+
+interface RecordNavOptions {
+  isPremium:       boolean
+  isLapsed?:       boolean   // free user who previously had premium
+  isAuthenticated?: boolean
+  serverCount?:    number
+}
 
 interface NavigationContextValue {
-  /** Current nav count for this month (anon or server) */
-  navCount: number
-  /** Whether the user is on the premium plan */
-  isPremium: boolean
-  /** Which prompt variant to show right now (null = none) */
+  navCount:     number
+  isPremium:    boolean
   activePrompt: NavPromptVariant
-  /** Dismiss whatever prompt is currently showing */
-  dismissPrompt: () => void
-  /**
-   * Call this AFTER a navigation result has loaded.
-   * Increments the counter and sets the appropriate prompt.
-   * Pass `isPremium` so the context doesn't need the full AuthContext.
-   */
-  recordNavigation: (opts: { isPremium: boolean; serverCount?: number }) => void
-  /**
-   * Called by AuthContext after sign-in to sync the server count.
-   * Keeps whichever is higher (anonymous or server).
-   */
-  syncServerCount: (serverCount: number) => void
+  /** True after upgrade modal was dismissed within the 24h cooldown window */
+  upgradeModalSuppressed: boolean
+  dismissPrompt:          () => void
+  recordNavigation:       (opts: RecordNavOptions) => void
+  syncServerCount:        (serverCount: number) => void
 }
 
 const NavigationContext = createContext<NavigationContextValue>({
   navCount: 0,
   isPremium: false,
   activePrompt: 'none',
+  upgradeModalSuppressed: false,
   dismissPrompt: () => {},
   recordNavigation: () => {},
   syncServerCount: () => {},
 })
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const [navCount,     setNavCount]     = useState(0)
-  const [isPremium,    setIsPremium]    = useState(false)
-  const [activePrompt, setActivePrompt] = useState<NavPromptVariant>('none')
+  const [navCount,              setNavCount]              = useState(0)
+  const [isPremium,             setIsPremium]             = useState(false)
+  const [activePrompt,          setActivePrompt]          = useState<NavPromptVariant>('none')
+  const [upgradeModalSuppressed, setUpgradeModalSuppressed] = useState(false)
 
-  // Initialise from localStorage on mount (anonymous count)
   useEffect(() => {
     setNavCount(getAnonNavCount())
   }, [])
 
   const dismissPrompt = useCallback(() => {
+    if (activePrompt === 'upgrade') {
+      setUpgradeCooldown()
+    }
     setActivePrompt('none')
-  }, [])
+  }, [activePrompt])
 
   const syncServerCount = useCallback((serverCount: number) => {
     setNavCount((current) => Math.max(current, serverCount))
   }, [])
 
   const recordNavigation = useCallback(
-    ({ isPremium: premium, serverCount }: { isPremium: boolean; serverCount?: number }) => {
+    ({ isPremium: premium, isLapsed = false, isAuthenticated = false, serverCount }: RecordNavOptions) => {
       setIsPremium(premium)
       if (premium) {
-        // Premium users: just keep the server count in sync, no prompts
         if (serverCount !== undefined) setNavCount(serverCount)
         return
       }
@@ -88,24 +102,35 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       // Determine new count
       let newCount: number
       if (serverCount !== undefined) {
-        // Signed-in user: trust server count (already incremented server-side)
         newCount = serverCount
         setNavCount(newCount)
       } else {
-        // Anonymous user: increment local counter
         newCount = incrementAnonNavCount()
         setNavCount(newCount)
       }
 
       // Determine which prompt to show
-      if (newCount === 1) {
-        setActivePrompt('auth-1')
-      } else if (newCount === 2) {
-        setActivePrompt('auth-2')
-      } else if (newCount === FREE_NAV_LIMIT) {
-        setActivePrompt('auth-3')
-      } else if (newCount > FREE_NAV_LIMIT) {
+      if (newCount > FREE_NAV_LIMIT) {
+        // Check 24h cooldown
+        if (isUpgradeCoolingDown()) {
+          setActivePrompt('none')
+          setUpgradeModalSuppressed(true)
+          return
+        }
+        setUpgradeModalSuppressed(false)
         setActivePrompt('upgrade')
+      } else if (newCount === FREE_NAV_LIMIT) {
+        if (isLapsed) {
+          setActivePrompt('lapsed-premium')
+        } else if (!isAuthenticated) {
+          setActivePrompt('auth-3')
+        } else {
+          setActivePrompt('none')
+        }
+      } else if (newCount === 2 && !isAuthenticated) {
+        setActivePrompt('auth-2')
+      } else if (newCount === 1 && !isAuthenticated) {
+        setActivePrompt('auth-1')
       } else {
         setActivePrompt('none')
       }
@@ -115,7 +140,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   return (
     <NavigationContext.Provider
-      value={{ navCount, isPremium, activePrompt, dismissPrompt, recordNavigation, syncServerCount }}
+      value={{
+        navCount, isPremium, activePrompt, upgradeModalSuppressed,
+        dismissPrompt, recordNavigation, syncServerCount,
+      }}
     >
       {children}
     </NavigationContext.Provider>

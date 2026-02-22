@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { requestMagicLink } from '@/lib/api'
 import { SITE_NAME } from '@/lib/constants'
 import { useLocale } from '@/hooks/useLocale'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 const T = {
   en: {
@@ -45,10 +46,11 @@ const T = {
 function SignInInner() {
   const router       = useRouter()
   const searchParams = useSearchParams()
-  const { user }     = useAuth()
+  const { user }           = useAuth()
   const { locale, toggle } = useLocale()
-  const t    = T[locale]
-  const isRTL = locale === 'ar'
+  const { track }          = useAnalytics()
+  const t                  = T[locale]
+  const isRTL              = locale === 'ar'
 
   const returnTo = searchParams.get('return_to') ?? '/profile'
 
@@ -65,6 +67,7 @@ function SignInInner() {
     setError('')
     setLoading(true)
     try {
+      track('auth_started', { provider: 'magic_link', trigger_source: 'banner' })
       await requestMagicLink(email.trim())
       setSent(true)
     } catch {
@@ -101,7 +104,10 @@ function SignInInner() {
             {/* Google OAuth placeholder */}
             <button
               className="w-full rounded border-2 border-brand-border bg-white px-6 py-3 text-sm font-semibold text-text-primary hover:bg-surface-subtle transition-colors flex items-center justify-center gap-2"
-              onClick={() => alert('Connect GOOGLE_CLIENT_ID_WEB in env to enable Google sign-in')}
+              onClick={() => {
+                track('auth_started', { provider: 'google', trigger_source: 'banner' })
+                alert('Connect GOOGLE_CLIENT_ID_WEB in env to enable Google sign-in')
+              }}
             >
               <span aria-hidden="true">G</span> {t.google}
             </button>
@@ -109,7 +115,10 @@ function SignInInner() {
             {/* Apple placeholder */}
             <button
               className="w-full rounded border-2 border-brand-border bg-white px-6 py-3 text-sm font-semibold text-text-primary hover:bg-surface-subtle transition-colors flex items-center justify-center gap-2"
-              onClick={() => alert('Connect Apple OAuth credentials in env to enable Apple sign-in')}
+              onClick={() => {
+                track('auth_started', { provider: 'apple', trigger_source: 'banner' })
+                alert('Connect Apple OAuth credentials in env to enable Apple sign-in')
+              }}
             >
               <span aria-hidden="true">A</span> {t.apple}
             </button>

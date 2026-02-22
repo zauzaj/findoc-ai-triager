@@ -1,22 +1,28 @@
 'use client'
 
 /**
- * Upgrade modal — appears AFTER navigation #4 results load.
+ * Upgrade modal — appears AFTER navigation #4 results load, or on "See all results" click.
  * Results remain visible but dimmed behind the modal.
  *
- * Hard rules (from product spec):
- * - Never appears before results load
- * - Shows real, dynamic total result count
- * - One price, one CTA — no comparison table
+ * Analytics events fired:
+ *   upgrade_modal_shown    — on mount
+ *   upgrade_cta_clicked    — when user clicks the upgrade CTA
+ *   upgrade_modal_dismissed — when user clicks "Remind me next month"
+ *
+ * Hard rules:
+ * - Never before results load
+ * - Dynamic real result count in headline
+ * - One price (AED), one CTA — no comparison table
  * - "No contracts. Cancel anytime." near CTA
- * - Dismiss ("Remind me next month") always clearly visible
- * - Price always in AED as primary currency
+ * - Dismiss always clearly visible
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createCheckout } from '@/lib/api'
 import { UPGRADE_PRICE_AED } from '@/lib/constants'
 import { useLocale } from '@/hooks/useLocale'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { useNavigation } from '@/contexts/NavigationContext'
 
 const T = {
   en: {
@@ -52,26 +58,39 @@ const T = {
 }
 
 interface Props {
-  /** Total number of clinics that match — shown dynamically in headline */
-  totalResults: number
-  onDismiss: () => void
-  /** JWT token — null if user is not signed in (redirect to sign-in first) */
-  token: string | null
-  signInHref: string
+  totalResults:  number
+  onDismiss:     () => void
+  token:         string | null
+  signInHref:    string
 }
 
 export default function UpgradeModal({ totalResults, onDismiss, token, signInHref }: Props) {
-  const { locale } = useLocale()
-  const t = T[locale]
+  const { locale }  = useLocale()
+  const { track }   = useAnalytics()
+  const { navCount } = useNavigation()
+  const t           = T[locale]
   const [loading, setLoading] = useState(false)
 
+  // Fire upgrade_modal_shown exactly once when modal mounts
+  useEffect(() => {
+    track('upgrade_modal_shown', {
+      navigation_number_this_month: navCount,
+      total_matching_results:       totalResults,
+      capped_results_shown:         Math.min(totalResults, 10),
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleUpgrade() {
+    track('upgrade_cta_clicked', {
+      total_matching_results:       totalResults,
+      navigation_number_this_month: navCount,
+    })
     if (!token) {
-      // Not signed in — send to sign-in first, then checkout
       window.location.href = signInHref
       return
     }
     setLoading(true)
+    track('checkout_started', { plan_type: 'premium', price_aed: UPGRADE_PRICE_AED })
     try {
       const url = await createCheckout(token)
       window.location.href = url
@@ -82,10 +101,17 @@ export default function UpgradeModal({ totalResults, onDismiss, token, signInHre
     }
   }
 
+  function handleDismiss() {
+    track('upgrade_modal_dismissed', {
+      navigation_number_this_month: navCount,
+      cooldown_applied:             true,
+    })
+    onDismiss()
+  }
+
   const isRTL = locale === 'ar'
 
   return (
-    // Overlay — results remain visible but dimmed behind modal
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.55)' }}
@@ -93,22 +119,14 @@ export default function UpgradeModal({ totalResults, onDismiss, token, signInHre
       role="dialog"
       aria-labelledby="upgrade-modal-title"
     >
-      <div
-        className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 space-y-4"
-        dir={isRTL ? 'rtl' : 'ltr'}
-      >
-        {/* Headline — dynamic result count */}
-        <h2
-          id="upgrade-modal-title"
-          className="text-lg font-bold text-primary-blue leading-snug"
-        >
+      <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
+
+        <h2 id="upgrade-modal-title" className="text-lg font-bold text-primary-blue leading-snug">
           {t.headline(totalResults)}
         </h2>
 
-        {/* Body */}
         <p className="text-sm text-text-muted">{t.body}</p>
 
-        {/* Benefits */}
         <ul className="space-y-1.5">
           {t.benefits.map((b) => (
             <li key={b} className="flex items-start gap-2 text-sm text-text-primary">
@@ -118,10 +136,8 @@ export default function UpgradeModal({ totalResults, onDismiss, token, signInHre
           ))}
         </ul>
 
-        {/* Price */}
         <p className="text-base font-semibold text-text-primary">{t.price}</p>
 
-        {/* CTA */}
         <button
           onClick={handleUpgrade}
           disabled={loading}
@@ -130,18 +146,13 @@ export default function UpgradeModal({ totalResults, onDismiss, token, signInHre
           {loading ? '…' : t.cta(totalResults)}
         </button>
 
-        {/* Note */}
         <p className="text-xs text-text-muted text-center">{t.note}</p>
 
-        {/* Trust signal */}
-        <p className="text-xs text-text-muted text-center border-t border-card-border pt-2">
-          {t.trust}
-        </p>
+        <p className="text-xs text-text-muted text-center border-t border-card-border pt-2">{t.trust}</p>
 
-        {/* Dismiss */}
         <div className="text-center">
           <button
-            onClick={onDismiss}
+            onClick={handleDismiss}
             className="text-xs text-text-muted hover:text-text-primary transition-colors underline underline-offset-2"
           >
             {t.dismiss}

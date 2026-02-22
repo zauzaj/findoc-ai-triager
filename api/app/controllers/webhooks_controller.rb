@@ -1,8 +1,6 @@
 # Receives Lemon Squeezy webhook events.
-# This controller is intentionally outside the api/v1 namespace —
-# it uses no JWT auth and must read the raw request body for HMAC verification.
+# Intentionally outside the api/v1 namespace — no JWT auth, HMAC-verified.
 class WebhooksController < ApplicationController
-  # Skip JWT authenticate! (webhooks authenticate via HMAC signature instead)
   before_action :verify_lemon_squeezy_signature
 
   # POST /webhooks/lemon_squeezy
@@ -43,24 +41,79 @@ class WebhooksController < ApplicationController
     user = User.find_by(id: user_id)
 
     case event_name
-    when "subscription_created", "subscription_updated", "subscription_resumed"
+    when "subscription_created"
       return unless user
-      status = attrs["status"]                              # "active", "trialing", "paused", etc.
+      status = attrs["status"]
       plan   = %w[active trialing].include?(status) ? "premium" : "free"
-      user.update!(
-        plan:                   plan,
-        ls_subscription_id:     subscription_id,
-        ls_subscription_status: status
+      was_premium_before = user.premium?
+      user.update!(plan: plan, ls_subscription_id: subscription_id, ls_subscription_status: status)
+      record_analytics_event(
+        event_name:  was_premium_before ? "subscription_reactivated" : "subscription_activated",
+        user:        user,
+        properties:  subscription_properties(user, attrs)
       )
-      Rails.logger.info "[webhook:ls] user #{user.id} → plan=#{plan} status=#{status}"
+
+    when "subscription_updated", "subscription_resumed"
+      return unless user
+      status = attrs["status"]
+      plan   = %w[active trialing].include?(status) ? "premium" : "free"
+      user.update!(plan: plan, ls_subscription_id: subscription_id, ls_subscription_status: status)
+      record_analytics_event(
+        event_name:  event_name == "subscription_resumed" ? "subscription_reactivated" : "subscription_renewed",
+        user:        user,
+        properties:  subscription_properties(user, attrs)
+      )
 
     when "subscription_cancelled"
-      # Still active until period end; mark status so frontend can show "cancels soon"
       user&.update!(ls_subscription_status: "cancelled")
+      record_analytics_event(
+        event_name: "subscription_canceled",
+        user:       user,
+        properties: subscription_properties(user, attrs).merge(
+          cancellation_day_of_cycle: attrs["billing_anchor"]
+        )
+      )
 
     when "subscription_expired", "subscription_paused"
       user&.update!(plan: "free", ls_subscription_status: attrs["status"] || event_name.split("_").last)
-      Rails.logger.info "[webhook:ls] user #{user_id} downgraded → free"
+      record_analytics_event(
+        event_name: "subscription_expired",
+        user:       user,
+        properties: subscription_properties(user, attrs)
+      )
+
+    when "subscription_payment_failed"
+      record_analytics_event(
+        event_name: "subscription_payment_failed",
+        user:       user,
+        properties: subscription_properties(user, attrs)
+      )
     end
+
+    Rails.logger.info "[webhook:ls] user #{user_id} → plan=#{user&.plan} status=#{user&.ls_subscription_status}"
+  end
+
+  # ── Analytics helpers ──────────────────────────────────────────────────────
+
+  def subscription_properties(user, attrs)
+    created_at = attrs["created_at"]&.then { |d| Time.parse(d) rescue nil }
+    age_days   = created_at ? ((Time.current - created_at) / 86_400).round : nil
+    {
+      plan_type:            "premium",
+      subscription_age_days: age_days,
+      ls_status:            attrs["status"],
+    }
+  end
+
+  def record_analytics_event(event_name:, user:, properties: {})
+    AnalyticsEvent.create!(
+      event_name:   event_name,
+      user_id:      user&.id,
+      anonymous_id: nil,
+      language:     user&.locale || "en",
+      properties:   properties.merge(source: "webhook")
+    )
+  rescue => e
+    Rails.logger.warn "[webhook:analytics] #{e.class}: #{e.message}"
   end
 end

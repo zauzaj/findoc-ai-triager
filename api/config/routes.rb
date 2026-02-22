@@ -38,6 +38,9 @@ Rails.application.routes.draw do
       # Users — profile updates (onboarding)
       patch "users/me",               to: "users#update"
 
+      # Analytics — client-side event ingestion
+      post "analytics/event",         to: "analytics#event"
+
       # Billing — Lemon Squeezy checkout
       post "billing/checkout",         to: "billing#checkout"
     end

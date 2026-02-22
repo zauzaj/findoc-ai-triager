@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { searchPlaces, trackEvent, Place } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigation } from '@/contexts/NavigationContext'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import { FREE_RESULT_LIMIT } from '@/lib/constants'
 import DoctorCard from '@/components/DoctorCard'
 import StaticMapPreview from '@/components/StaticMapPreview'
@@ -13,35 +14,36 @@ import UpgradeModal from '@/components/UpgradeModal'
 import ResultLimitPrompt from '@/components/ResultLimitPrompt'
 
 interface ResultsClientProps {
-  specialist: string
-  lat?: string
-  lng?: string
-  insurance?: string
-  urgency?: string
-  /** Nav count returned from the /navigate API (signed-in users only) */
+  specialist:     string
+  lat?:           string
+  lng?:           string
+  insurance?:     string
+  urgency?:       string
   serverNavCount?: number
 }
 
 export default function ResultsClient({
-  specialist,
-  lat,
-  lng,
-  insurance,
-  urgency,
-  serverNavCount,
+  specialist, lat, lng, insurance, urgency, serverNavCount,
 }: ResultsClientProps) {
-  const { user, token } = useAuth()
-  const { activePrompt, dismissPrompt, recordNavigation } = useNavigation()
+  const { user, token }   = useAuth()
+  const { track }         = useAnalytics()
+  const {
+    activePrompt, upgradeModalSuppressed,
+    dismissPrompt, recordNavigation, navCount,
+  } = useNavigation()
 
-  const [places,              setPlaces]              = useState<Place[]>([])
-  const [loading,             setLoading]             = useState(true)
-  const [error,               setError]               = useState('')
-  const [navRecorded,         setNavRecorded]         = useState(false)
-  const [showResultUpgrade,   setShowResultUpgrade]   = useState(false)
+  const [places,            setPlaces]            = useState<Place[]>([])
+  const [loading,           setLoading]           = useState(true)
+  const [error,             setError]             = useState('')
+  const [navRecorded,       setNavRecorded]       = useState(false)
+  const [showResultUpgrade, setShowResultUpgrade] = useState(false)
 
-  const isPremium = user?.plan === 'premium'
+  const isPremium  = user?.plan === 'premium'
+  const isLapsed   = !isPremium && !!(
+    user?.ls_subscription_status === 'cancelled' ||
+    user?.ls_subscription_status === 'expired'
+  )
 
-  // Sign-in href with return-to so user is dropped back here after auth
   const returnTo = encodeURIComponent(
     `/results?specialist=${encodeURIComponent(specialist)}` +
     (insurance ? `&insurance=${encodeURIComponent(insurance)}` : '') +
@@ -49,7 +51,8 @@ export default function ResultsClient({
     (lat       ? `&lat=${lat}`                                  : '') +
     (lng       ? `&lng=${lng}`                                  : '')
   )
-  const signInHref = `/auth/signin?return_to=${returnTo}`
+  const signInHref    = `/auth/signin?return_to=${returnTo}`
+  const upgradeHref   = token ? undefined : signInHref   // for lapsed-premium CTA
 
   useEffect(() => {
     async function fetchPlaces() {
@@ -59,19 +62,33 @@ export default function ResultsClient({
         const data = await searchPlaces({ specialist, lat, lng, insurance }, token)
         setPlaces(data)
 
-        // Track views for all returned places
         data.forEach((place) => {
           trackEvent('view', { google_place_id: place.id, specialty: specialist }, token)
         })
 
-        // Record navigation AFTER results load (business rule: "after results load")
         if (!navRecorded) {
           setNavRecorded(true)
+          const effectiveServerCount = user
+            ? (serverNavCount ?? user.navigations_this_month)
+            : undefined
+
           recordNavigation({
-            isPremium:   user?.plan === 'premium',
-            // For signed-in users: prefer server count from navigate response (already incremented).
-            // For anonymous users: undefined (client-side counter used instead).
-            serverCount: user ? (serverNavCount ?? user.navigations_this_month) : undefined,
+            isPremium:       isPremium,
+            isLapsed:        isLapsed,
+            isAuthenticated: !!user,
+            serverCount:     effectiveServerCount,
+          })
+
+          // navigation_completed analytics event
+          const eventName = isPremium ? 'premium_navigation_completed' : 'navigation_completed'
+          const newCount  = effectiveServerCount ?? navCount + 1
+          track(eventName, {
+            specialist_type:              specialist,
+            insurance_selected:           insurance ?? null,
+            total_matching_results:       data.length,
+            results_shown:                isPremium ? data.length : Math.min(data.length, FREE_RESULT_LIMIT),
+            navigation_number_this_month: newCount,
+            is_capped:                    !isPremium && data.length > FREE_RESULT_LIMIT,
           })
         }
       } catch {
@@ -85,22 +102,26 @@ export default function ResultsClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialist, lat, lng, insurance])
 
-  // Result limiting — free users see first FREE_RESULT_LIMIT clinics
+  // Fire upgrade_modal_suppressed event when the modal was suppressed by cooldown
+  useEffect(() => {
+    if (upgradeModalSuppressed) {
+      track('upgrade_modal_suppressed', {
+        navigation_number_this_month: navCount,
+      })
+    }
+  }, [upgradeModalSuppressed]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const visiblePlaces = isPremium ? places : places.slice(0, FREE_RESULT_LIMIT)
   const hiddenCount   = isPremium ? 0 : Math.max(0, places.length - FREE_RESULT_LIMIT)
 
   function handleResultLimitUpgradeClick() {
-    // "See all results" clicked — show upgrade modal over current results
     setShowResultUpgrade(true)
   }
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20" aria-live="polite">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-primary-blue border-t-transparent animate-spin mb-4"
-          aria-hidden="true"
-        />
+        <div className="w-8 h-8 rounded-full border-2 border-primary-blue border-t-transparent animate-spin mb-4" aria-hidden="true" />
         <p className="text-text-muted text-sm">Finding clinics near you&hellip;</p>
       </div>
     )
@@ -108,10 +129,7 @@ export default function ResultsClient({
 
   if (error) {
     return (
-      <div
-        className="rounded border border-status-error-border bg-status-error-bg p-4 text-sm text-status-error-text"
-        role="alert"
-      >
+      <div className="rounded border border-status-error-border bg-status-error-bg p-4 text-sm text-status-error-text" role="alert">
         {error}
       </div>
     )
@@ -127,30 +145,30 @@ export default function ResultsClient({
     )
   }
 
-  const showNavUpgradeModal    = activePrompt === 'upgrade'
-  const showUpgradeModal       = showNavUpgradeModal || showResultUpgrade
+  const showUpgradeModal = activePrompt === 'upgrade' || showResultUpgrade
+
+  // Determine whether to show an auth/nudge banner
+  // Auth banners: anonymous users only (nav #1/#2/#3)
+  // Lapsed-premium banner: signed-in free users who previously had premium (nav #3)
+  const showBanner =
+    activePrompt !== 'none' &&
+    activePrompt !== 'upgrade' &&
+    (!user || activePrompt === 'lapsed-premium')
 
   return (
     <>
-      {/* Upgrade modal — triggered by nav #4 OR by "See all results" click */}
       {showUpgradeModal && (
         <UpgradeModal
           totalResults={places.length}
-          onDismiss={() => {
-            dismissPrompt()
-            setShowResultUpgrade(false)
-          }}
+          onDismiss={() => { dismissPrompt(); setShowResultUpgrade(false) }}
           token={token}
           signInHref={signInHref}
         />
       )}
 
       <div className={`space-y-4 ${showUpgradeModal ? 'opacity-40 pointer-events-none select-none' : ''}`}>
-        {urgency && urgency !== 'low' && (
-          <UrgencyBanner urgency={urgency} />
-        )}
+        {urgency && urgency !== 'low' && <UrgencyBanner urgency={urgency} />}
 
-        {/* Static Maps API — multi-pin overview, top of results */}
         <StaticMapPreview places={visiblePlaces} userLat={lat} userLng={lng} />
 
         <p className="text-xs text-text-muted">
@@ -166,20 +184,21 @@ export default function ResultsClient({
           ))}
         </ul>
 
-        {/* Result cap prompt — only shown when more exist and not premium */}
         {hiddenCount > 0 && (
           <ResultLimitPrompt
             hiddenCount={hiddenCount}
+            totalCount={places.length}
             onUpgradeClick={handleResultLimitUpgradeClick}
           />
         )}
 
-        {/* Auth nudge banners — shown after nav #1, #2, #3 for anonymous users */}
-        {!user && activePrompt !== 'none' && activePrompt !== 'upgrade' && (
+        {showBanner && (
           <AuthPromptBanner
             variant={activePrompt}
             onDismiss={dismissPrompt}
             signInHref={signInHref}
+            upgradeHref={upgradeHref}
+            navCount={navCount}
           />
         )}
 

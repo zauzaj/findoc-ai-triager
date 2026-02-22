@@ -2,24 +2,23 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { AuthUser, getMe, mergeAnonymousCount } from '@/lib/api'
-import { getAnonNavCount } from '@/lib/visitorTracking'
+import { getAnonNavCount, getOrCreateVisitorId, getStoredLocale } from '@/lib/visitorTracking'
+import { track } from '@/lib/analytics'
 
 interface AuthContextValue {
-  user: AuthUser | null
-  token: string | null
-  loading: boolean
-  /** True when a new sign-in user needs to complete the onboarding screen */
+  user:            AuthUser | null
+  token:           string | null
+  loading:         boolean
   needsOnboarding: boolean
-  setAuth: (token: string, user: AuthUser) => void
-  /** Update the in-memory user after profile changes (onboarding, etc.) */
-  updateUser: (user: AuthUser) => void
-  signOut: () => void
+  setAuth:         (token: string, user: AuthUser) => Promise<void>
+  updateUser:      (user: AuthUser) => void
+  signOut:         () => void
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null, token: null, loading: true,
   needsOnboarding: false,
-  setAuth: () => {}, updateUser: () => {}, signOut: () => {},
+  setAuth: async () => {}, updateUser: () => {}, signOut: () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -41,20 +40,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('findoc_token', t)
     setToken(t)
 
-    // Transfer anonymous navigation count → server (never resets on sign-in)
-    const anonCount = getAnonNavCount()
+    const anonCount  = getAnonNavCount()
+    const anonymousId = getOrCreateVisitorId()
+    const language   = getStoredLocale()
+    let   finalUser  = u
+
     if (anonCount > 0) {
       try {
-        const merged = await mergeAnonymousCount(t, anonCount)
-        setUser(merged)
+        finalUser = await mergeAnonymousCount(t, anonCount)
+
+        // Fire navigation_counter_transferred when anon count carried over
+        track('navigation_counter_transferred', {
+          navigation_count_before_transfer: anonCount,
+          navigation_count_after_transfer:  finalUser.navigations_this_month,
+        }, { token: t, user_id: finalUser.id, language })
+
+        setUser(finalUser)
       } catch {
-        setUser(u) // fallback — still show the user
+        setUser(u)
+        finalUser = u
       }
     } else {
       setUser(u)
     }
 
-    // Show onboarding screen if user hasn't set their emirate yet
+    // Fire auth_completed
+    track('auth_completed', {
+      was_anonymous_before:         anonCount > 0,
+      navigation_count_this_month:  finalUser.navigations_this_month,
+      anonymous_id:                 anonymousId,
+    }, {
+      token:    t,
+      user_id:  finalUser.id,
+      emirate:  finalUser.emirate,
+      language,
+    })
+
     const isNew = !u.emirate
     setNeedsOnboarding(isNew)
   }

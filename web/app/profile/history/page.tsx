@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { getHistory, NavigationSession } from '@/lib/api'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 const URGENCY_COLOURS: Record<string, string> = {
   low:       'bg-soft-green text-primary-green border-primary-green',
@@ -15,6 +16,7 @@ const URGENCY_COLOURS: Record<string, string> = {
 
 export default function HistoryPage() {
   const { token, loading: authLoading } = useAuth()
+  const { track } = useAnalytics()
   const router = useRouter()
   const [sessions, setSessions] = useState<NavigationSession[]>([])
   const [loading,  setLoading]  = useState(true)
@@ -23,6 +25,7 @@ export default function HistoryPage() {
   useEffect(() => {
     if (authLoading) return
     if (!token) { router.replace('/auth/signin'); return }
+    track('navigation_history_viewed', {})
     getHistory(token)
       .then(setSessions)
       .catch(() => setError('Failed to load history.'))
