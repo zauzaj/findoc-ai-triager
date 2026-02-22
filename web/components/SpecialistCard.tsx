@@ -12,7 +12,7 @@ export default function SpecialistCard({
   const confidencePercent = Math.round(confidence * 100)
 
   return (
-    <div className="bg-white rounded border-2 border-[#eef2f6] p-6 shadow-[0_4px_10px_rgba(67,95,113,0.08)]">
+    <div className="bg-white rounded border-2 border-card-border p-6 shadow-card">
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
           <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">

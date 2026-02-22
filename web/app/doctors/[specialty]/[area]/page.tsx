@@ -53,20 +53,20 @@ export default function DoctorsPage({ params }: DoctorsPageProps) {
         </p>
       </header>
 
-      <div className="bg-white rounded border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded border border-card-border p-6 mb-6">
         <p className="text-sm text-text-muted mb-4">
           Describe your symptoms and we&apos;ll confirm whether a {specialty.toLowerCase()} is
           right for you, then show you clinics near {area}.
         </p>
         <Link
           href={`/?specialist=${encodeURIComponent(params.specialty)}`}
-          className="inline-flex items-center rounded bg-primary-blue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center rounded bg-primary-blue px-4 py-2 text-sm font-semibold text-white hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
         >
           Get guidance
         </Link>
       </div>
 
-      <div className="bg-soft-blue rounded border border-blue-100 p-4">
+      <div className="bg-soft-blue rounded border border-soft-blue p-4">
         <p className="text-xs text-text-muted leading-relaxed">
           Clinic listings for this page are being prepared. In the meantime, describe your
           symptoms on our home page for personalised guidance.

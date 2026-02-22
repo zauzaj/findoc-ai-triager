@@ -37,7 +37,7 @@ export default function ForClinicsPage() {
       </header>
 
       <div className="space-y-4 mb-10">
-        <div className="bg-white rounded border border-gray-100 p-5">
+        <div className="bg-white rounded border border-card-border p-5">
           <h2 className="font-semibold text-text-primary mb-2">Intent-matched patients</h2>
           <p className="text-sm text-text-muted leading-relaxed">
             Every patient we route has an active health concern. They are already looking for
@@ -45,7 +45,7 @@ export default function ForClinicsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded border border-gray-100 p-5">
+        <div className="bg-white rounded border border-card-border p-5">
           <h2 className="font-semibold text-text-primary mb-2">
             Insurance-filtered referrals
           </h2>
@@ -55,7 +55,7 @@ export default function ForClinicsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded border border-gray-100 p-5">
+        <div className="bg-white rounded border border-card-border p-5">
           <h2 className="font-semibold text-text-primary mb-2">Transparent lead tracking</h2>
           <p className="text-sm text-text-muted leading-relaxed">
             We track calls, direction requests, and website visits so you can measure the value
@@ -64,7 +64,7 @@ export default function ForClinicsPage() {
         </div>
       </div>
 
-      <div className="bg-soft-blue rounded border border-blue-100 p-6">
+      <div className="bg-soft-blue rounded border border-soft-blue p-6">
         <h2 className="font-semibold text-text-primary mb-2">Interested in listing?</h2>
         <p className="text-sm text-text-muted mb-4">
           We are currently onboarding clinics in Dubai, Abu Dhabi, and Sharjah. Get in touch

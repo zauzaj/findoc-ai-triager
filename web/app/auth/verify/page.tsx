@@ -35,7 +35,7 @@ function VerifyInner() {
           <p className="text-text-muted text-sm">Signing you in…</p>
         </>
       ) : (
-        <div className="bg-white rounded border-2 border-[#eef2f6] p-8 shadow-[0_4px_10px_rgba(67,95,113,0.08)]">
+        <div className="bg-white rounded border-2 border-card-border p-8 shadow-card">
           <p className="text-emergency-red font-medium mb-2">Sign-in failed</p>
           <p className="text-sm text-text-muted mb-4">{message}</p>
           <a href="/auth/signin" className="text-sm text-primary-blue hover:underline">Try again</a>

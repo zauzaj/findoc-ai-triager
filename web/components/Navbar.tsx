@@ -35,7 +35,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/auth/signin"
-              className="bg-primary-orange text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-orange-500 transition-colors"
+              className="bg-primary-orange text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-primary-orange-hover transition-colors"
             >
               Sign in
             </Link>

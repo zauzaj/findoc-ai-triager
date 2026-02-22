@@ -51,20 +51,20 @@ export default function InsurancePage({ params }: InsurancePageProps) {
         </p>
       </header>
 
-      <div className="bg-white rounded border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded border border-card-border p-6 mb-6">
         <p className="text-sm text-text-muted mb-4">
           Start by describing your symptoms. We&apos;ll recommend a specialist and filter
           clinics to those that accept {provider}.
         </p>
         <Link
           href={`/?insurance=${encodeURIComponent(provider)}`}
-          className="inline-flex items-center rounded bg-primary-blue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center rounded bg-primary-blue px-4 py-2 text-sm font-semibold text-white hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
         >
           Start with {provider}
         </Link>
       </div>
 
-      <div className="bg-soft-green rounded border border-green-200 p-4">
+      <div className="bg-soft-green rounded border border-primary-green p-4">
         <p className="text-xs text-text-muted leading-relaxed">
           Findoc works with all major UAE insurance providers including{' '}
           {INSURERS.join(', ')}.

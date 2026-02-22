@@ -23,7 +23,7 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
   const embedUrl = buildEmbedUrl(place)
 
   return (
-    <article className="bg-white rounded border-2 border-[#eef2f6] p-5 shadow-[0_4px_10px_rgba(67,95,113,0.08)] transition-[border-color] duration-300 hover:border-primary-blue">
+    <article className="bg-white rounded border-2 border-card-border p-5 shadow-card transition-[border-color] duration-300 hover:border-primary-blue">
       <div className="flex items-start justify-between gap-3 mb-1">
         <div className="min-w-0">
           <h3 className="font-semibold text-primary-blue text-base truncate">
@@ -63,7 +63,7 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
           <a
             href={`tel:${place.phone}`}
             onClick={() => trackEvent('phone_click', { google_place_id: place.id })}
-            className="inline-flex items-center rounded bg-primary-blue px-4 py-1.5 text-xs font-semibold text-white hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2"
+            className="inline-flex items-center rounded bg-primary-blue px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-blue-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2"
             aria-label={`Call ${place.name}`}
           >
             Call Clinic
@@ -76,7 +76,7 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('directions', { google_place_id: place.id })}
-            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
             aria-label={`Get directions to ${place.name}`}
           >
             Get Directions
@@ -86,7 +86,7 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
         {embedUrl && (
           <button
             onClick={() => setShowMap((v) => !v)}
-            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
             aria-expanded={showMap}
             aria-label={showMap ? `Close map for ${place.name}` : `Open map for ${place.name}`}
           >
@@ -100,7 +100,7 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('website', { google_place_id: place.id })}
-            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
             aria-label={`Visit website of ${place.name}`}
           >
             Visit Website
@@ -110,7 +110,7 @@ export default function DoctorCard({ place, insurance }: DoctorCardProps) {
 
       {/* Maps Embed API iframe — shown on demand */}
       {showMap && embedUrl && (
-        <div className="mt-4 -mx-5 -mb-5 border-t border-[#eef2f6] overflow-hidden rounded-b">
+        <div className="mt-4 -mx-5 -mb-5 border-t border-card-border overflow-hidden rounded-b">
           <iframe
             src={embedUrl}
             width="100%"

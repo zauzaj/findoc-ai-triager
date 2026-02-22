@@ -18,17 +18,17 @@ export const URGENCY_LEVELS = {
   },
   medium: {
     label: 'Moderate Priority',
-    color: 'bg-yellow-50 text-yellow-800 border-yellow-400',
+    color: 'bg-status-medium-bg text-status-medium-text border-status-medium-border',
     description: 'Consider scheduling an appointment within the next few days.',
   },
   high: {
     label: 'High Priority',
-    color: 'bg-amber-50 text-amber-800 border-warning-amber',
+    color: 'bg-status-high-bg text-status-high-text border-status-high-border',
     description: 'Please seek medical attention soon — within 24 hours if possible.',
   },
   emergency: {
     label: 'Emergency',
-    color: 'bg-red-50 text-red-700 border-emergency-red',
+    color: 'bg-status-error-bg text-status-error-text border-emergency-red',
     description: 'Please go to the nearest emergency department or call 998 immediately.',
   },
 } as const

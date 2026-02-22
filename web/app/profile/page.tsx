@@ -26,7 +26,7 @@ export default function ProfilePage() {
       <h1 className="text-2xl font-semibold text-primary-blue mb-6">Your Profile</h1>
 
       {/* User card */}
-      <div className="bg-white rounded border-2 border-[#eef2f6] p-6 shadow-[0_4px_10px_rgba(67,95,113,0.08)] mb-4 flex items-center gap-4">
+      <div className="bg-white rounded border-2 border-card-border p-6 shadow-card mb-4 flex items-center gap-4">
         <div className="w-14 h-14 rounded-full bg-primary-blue flex items-center justify-center text-white text-xl font-bold select-none flex-shrink-0">
           {(user.name ?? user.email).charAt(0).toUpperCase()}
         </div>
@@ -47,7 +47,7 @@ export default function ProfilePage() {
           <Link
             key={href}
             href={href}
-            className="bg-white rounded border-2 border-[#eef2f6] p-4 shadow-[0_4px_10px_rgba(67,95,113,0.08)] hover:border-primary-blue transition-[border-color] duration-300 flex items-center gap-3"
+            className="bg-white rounded border-2 border-card-border p-4 shadow-card hover:border-primary-blue transition-[border-color] duration-300 flex items-center gap-3"
           >
             <span className="text-2xl">{emoji}</span>
             <span className="text-sm font-medium text-text-primary">{label}</span>

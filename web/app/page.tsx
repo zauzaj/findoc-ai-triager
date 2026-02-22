@@ -24,11 +24,11 @@ export default function HomePage() {
         </p>
       </div>
 
-      <div className="bg-white rounded border border-gray-100 p-6 sm:p-8">
+      <div className="bg-white rounded border border-card-border p-6 sm:p-8">
         <SymptomInput />
       </div>
 
-      <div className="mt-8 p-4 bg-soft-blue rounded border border-blue-100">
+      <div className="mt-8 p-4 bg-soft-blue rounded border border-soft-blue">
         <p className="text-xs text-text-muted leading-relaxed">
           <strong className="text-text-primary">Independent guidance only.</strong> Findoc UAE
           does not provide medical diagnoses. Always consult a licensed healthcare professional.

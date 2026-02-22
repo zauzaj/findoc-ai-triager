@@ -45,7 +45,7 @@ export default function SymptomInput() {
           value={symptoms}
           onChange={(e) => setSymptoms(e.target.value)}
           placeholder="e.g. I have had a persistent cough for two weeks, some chest tightness, and mild fever..."
-          className="w-full rounded border border-gray-200 bg-white px-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-soft-blue resize-none"
+          className="w-full rounded border border-brand-border bg-white px-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-soft-blue resize-none"
           aria-describedby={error ? 'symptoms-error' : undefined}
           aria-invalid={!!error}
           disabled={isSubmitting}
@@ -64,7 +64,7 @@ export default function SymptomInput() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded bg-primary-orange px-6 py-3 text-sm font-semibold text-white hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full rounded bg-primary-orange px-6 py-3 text-sm font-semibold text-white hover:bg-primary-orange-hover focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         aria-label="Get guidance on which specialist to see"
       >
         {isSubmitting ? 'Finding your specialist…' : 'Get Guidance'}

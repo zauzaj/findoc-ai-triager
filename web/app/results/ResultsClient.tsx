@@ -62,7 +62,7 @@ export default function ResultsClient({
   if (error) {
     return (
       <div
-        className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        className="rounded border border-status-error-border bg-status-error-bg p-4 text-sm text-status-error-text"
         role="alert"
       >
         {error}
@@ -72,7 +72,7 @@ export default function ResultsClient({
 
   if (places.length === 0) {
     return (
-      <div className="rounded border border-gray-100 bg-white p-8 text-center">
+      <div className="rounded border border-card-border bg-white p-8 text-center">
         <p className="text-text-muted text-sm">
           No clinics found for your search criteria. Try adjusting your filters.
         </p>
@@ -102,7 +102,7 @@ export default function ResultsClient({
         ))}
       </ul>
 
-      <p className="text-xs text-text-muted pt-2 border-t border-gray-100">
+      <p className="text-xs text-text-muted pt-2 border-t border-card-border">
         Results are not ranked by quality. Sorted by proximity and rating only. Findoc does
         not endorse any clinic.
       </p>

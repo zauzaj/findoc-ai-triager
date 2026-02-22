@@ -43,7 +43,7 @@ export default function SavedPage() {
 
       <ul className="space-y-3">
         {saved.map((s) => (
-          <li key={s.id} className="bg-white rounded border-2 border-[#eef2f6] p-5 shadow-[0_4px_10px_rgba(67,95,113,0.08)] flex items-start justify-between gap-4">
+          <li key={s.id} className="bg-white rounded border-2 border-card-border p-5 shadow-card flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="font-medium text-primary-blue text-sm truncate">{s.google_place_id}</p>
               {s.specialty && <p className="text-xs text-text-muted mt-0.5">{s.specialty}</p>}

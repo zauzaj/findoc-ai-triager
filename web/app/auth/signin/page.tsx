@@ -33,7 +33,7 @@ export default function SignInPage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-16">
-      <div className="bg-white rounded border-2 border-[#eef2f6] p-8 shadow-[0_4px_10px_rgba(67,95,113,0.08)]">
+      <div className="bg-white rounded border-2 border-card-border p-8 shadow-card">
         <h1 className="text-xl font-semibold text-primary-blue mb-1">{SITE_NAME}</h1>
         <p className="text-sm text-text-muted mb-6">Sign in to save clinics and view your history.</p>
 
@@ -62,7 +62,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded bg-primary-orange px-6 py-3 text-sm font-semibold text-white hover:bg-orange-500 transition-colors disabled:opacity-60"
+              className="w-full rounded bg-primary-orange px-6 py-3 text-sm font-semibold text-white hover:bg-primary-orange-hover transition-colors disabled:opacity-60"
             >
               {loading ? 'Sending…' : 'Send sign-in link'}
             </button>

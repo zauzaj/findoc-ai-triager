@@ -30,7 +30,7 @@ export default function StaticMapPreview({
   const embedUrl = embedPlace ? buildEmbedUrl(embedPlace) : ''
 
   return (
-    <div className="rounded border border-gray-100 overflow-hidden mb-6">
+    <div className="rounded border border-card-border overflow-hidden mb-6">
       {/* Static multi-pin overview */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -45,7 +45,7 @@ export default function StaticMapPreview({
       {/* Maps Embed iframe — shown when user opens a specific clinic */}
       {embedUrl && (
         <div>
-          <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-t border-gray-100">
+          <div className="flex items-center justify-between px-3 py-2 bg-surface-subtle border-t border-card-border">
             <span className="text-xs font-medium text-text-primary truncate max-w-[80%]">
               {embedPlace!.name}
             </span>
@@ -70,7 +70,7 @@ export default function StaticMapPreview({
         </div>
       )}
 
-      <p className="px-3 py-2 text-xs text-text-muted bg-gray-50 border-t border-gray-100">
+      <p className="px-3 py-2 text-xs text-text-muted bg-surface-subtle border-t border-card-border">
         {places.filter((p) => p.lat != null).length} location
         {places.filter((p) => p.lat != null).length !== 1 ? 's' : ''} on map
       </p>

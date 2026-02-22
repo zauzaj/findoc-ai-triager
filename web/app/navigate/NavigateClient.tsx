@@ -66,7 +66,7 @@ export default function NavigateClient({
   if (error) {
     return (
       <div
-        className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        className="rounded border border-status-error-border bg-status-error-bg p-4 text-sm text-status-error-text"
         role="alert"
       >
         {error}
@@ -86,13 +86,13 @@ export default function NavigateClient({
         confidence={result.confidence}
       />
 
-      <div className="bg-white rounded border-2 border-[#eef2f6] p-5 shadow-[0_4px_10px_rgba(67,95,113,0.08)]">
+      <div className="bg-white rounded border-2 border-card-border p-5 shadow-card">
         <InsuranceSelect value={insurance} onChange={setInsurance} />
       </div>
 
       <button
         onClick={handleFindClinics}
-        className="w-full rounded bg-primary-blue px-6 py-3 text-sm font-semibold text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
+        className="w-full rounded bg-primary-blue px-6 py-3 text-sm font-semibold text-white hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
         aria-label={`Find ${result.specialist} clinics near me`}
       >
         Find Clinics Near Me

@@ -8,9 +8,9 @@ import { getHistory, NavigationSession } from '@/lib/api'
 
 const URGENCY_COLOURS: Record<string, string> = {
   low:       'bg-soft-green text-primary-green border-primary-green',
-  medium:    'bg-yellow-50 text-yellow-800 border-yellow-400',
-  high:      'bg-amber-50 text-amber-800 border-warning-amber',
-  emergency: 'bg-red-50 text-red-700 border-emergency-red',
+  medium:    'bg-status-medium-bg text-status-medium-text border-status-medium-border',
+  high:      'bg-status-high-bg text-status-high-text border-status-high-border',
+  emergency: 'bg-status-error-bg text-status-error-text border-emergency-red',
 }
 
 export default function HistoryPage() {
@@ -44,10 +44,10 @@ export default function HistoryPage() {
 
       <ul className="space-y-3">
         {sessions.map((s) => (
-          <li key={s.id} className="bg-white rounded border-2 border-[#eef2f6] p-5 shadow-[0_4px_10px_rgba(67,95,113,0.08)] hover:border-primary-blue transition-[border-color] duration-300">
+          <li key={s.id} className="bg-white rounded border-2 border-card-border p-5 shadow-card hover:border-primary-blue transition-[border-color] duration-300">
             <div className="flex items-start justify-between gap-3 mb-2">
               <p className="text-sm font-medium text-primary-blue">{s.recommended_specialist}</p>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border capitalize flex-shrink-0 ${URGENCY_COLOURS[s.urgency_level] ?? 'bg-gray-50 text-gray-600 border-gray-300'}`}>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border capitalize flex-shrink-0 ${URGENCY_COLOURS[s.urgency_level] ?? 'bg-surface-subtle text-text-muted border-brand-border'}`}>
                 {s.urgency_level}
               </span>
             </div>

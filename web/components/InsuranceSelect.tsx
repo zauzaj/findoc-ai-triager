@@ -26,7 +26,7 @@ export default function InsuranceSelect({
         name="insurance"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm text-text-primary focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-soft-blue"
+        className="w-full rounded border border-brand-border bg-white px-3 py-2 text-sm text-text-primary focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-soft-blue"
         aria-label="Select your insurance provider"
       >
         <option value="">No insurance / pay privately</option>
