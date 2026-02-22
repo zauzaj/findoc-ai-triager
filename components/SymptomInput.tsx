@@ -64,7 +64,7 @@ export default function SymptomInput() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded bg-primary-blue px-6 py-3 text-sm font-semibold text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full rounded bg-primary-orange px-6 py-3 text-sm font-semibold text-white hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         aria-label="Get guidance on which specialist to see"
       >
         {isSubmitting ? 'Finding your specialist…' : 'Get Guidance'}
