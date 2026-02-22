@@ -39,3 +39,20 @@ next-env.d.ts
 prisma/*.db
 prisma/*.db-journal
 prisma/prisma/
+
+# monorepo — Ruby/Rails
+api/log/*.log
+api/tmp/
+api/storage/
+api/*.db
+api/public/uploads/
+api/.bundle/
+
+# monorepo — Next.js
+web/.next/
+web/node_modules/
+web/.env.local
+
+# Environment files at root
+.env
+.env.local
