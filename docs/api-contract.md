@@ -121,6 +121,29 @@ Returns full place details. Cached 7 days.
 // Response 200: { "saved_places": [ { "id": 1, "google_place_id": "...", "specialty": "...", "saved_at": "..." } ] }
 ```
 
+### GET /called_places  🔒
+Returns up to 50 unique clinics from the signed-in user's `phone_click` events, sorted by most recent call.
+```json
+// Response 200
+{
+  "called_places": [
+    {
+      "google_place_id": "ChIJ...",
+      "name": "Dubai Heart Centre",
+      "address": "Healthcare City, Dubai",
+      "phone": "+971 4 123 4567",
+      "maps_url": "https://maps.google.com/...",
+      "times_called": 3,
+      "last_called_at": "2026-02-23T10:30:00Z",
+      "specialty": "Cardiologist",
+      "insurance": "daman",
+      "partial": false
+    }
+  ]
+}
+```
+If place enrichment fails for a row, the row is still returned with `partial: true` and metadata.
+
 ---
 
 ## Insurance

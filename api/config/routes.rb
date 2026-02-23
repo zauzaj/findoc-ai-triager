@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       post "places/:place_id/save",    to: "saved_places#create"
       delete "places/:place_id/save",  to: "saved_places#destroy"
       get  "saved_places",             to: "saved_places#index"
+      get  "called_places",            to: "called_places#index"
 
       # Insurance
       get  "insurance_providers",      to: "insurance_providers#index"
