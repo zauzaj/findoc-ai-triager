@@ -35,3 +35,26 @@ web/public/sw.js
 web/public/workbox-*.js
 web/public/swe-worker-*.js
 web/public/fallback-*.js
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Scraper runtime output
+scraper_failures.log
+clinic_insurance_results.csv
+
+# OS
+.DS_Store
+Thumbs.db
