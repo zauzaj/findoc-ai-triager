@@ -80,3 +80,15 @@ Google:
 | Maps           | Google Places (New)        | UAE coverage, required Google attribution         |
 | Auth           | JWT (HS256, 30d)           | Stateless, works across web + future mobile       |
 | Payments (TBD) | Lemon Squeezy              | Simple SaaS billing for clinic portal             |
+
+## Async jobs & operations
+
+- **Queue backend:** Production uses ActiveJob and reads `ACTIVE_JOB_QUEUE_ADAPTER` (set this to `sidekiq` or `resque` in production; default fallback is `async`).
+- **Magic-link email flow:** `POST /api/v1/auth/magic_link` generates a token, enqueues `SendMagicLinkEmailJob`, and returns quickly with `202 Accepted`.
+- **Webhook flow:** `POST /webhooks/lemon_squeezy` verifies HMAC, computes an idempotency key, enqueues `ProcessLemonSqueezyWebhookJob`, and returns `202 Accepted`.
+- **Retries/backoff:** Jobs use `retry_on ... wait: :exponentially_longer` for transient DB/network failures.
+- **Idempotency:** Lemon Squeezy processing stores a short-lived idempotency key in `Rails.cache` to ignore duplicate deliveries and replayed payloads.
+- **Failure handling:**
+  - Failed jobs remain visible in the queue backend's retry/dead queue (for example Sidekiq retry/dead sets) for operator inspection.
+  - Analytics write failures are non-fatal and logged, so subscription state sync is prioritized.
+  - Signature verification failures are rejected synchronously with `401` and never enqueued.

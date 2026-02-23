@@ -28,8 +28,13 @@ module Api
         end
         token     = user.generate_magic_link_token!
         magic_url = "#{ENV.fetch('WEB_URL', 'http://localhost:3000')}/auth/verify?token=#{token}"
-        Rails.logger.info "[magic_link] #{email} → #{magic_url}"
-        render json: { message: "Magic link sent. Check your email.", debug_url: Rails.env.development? ? magic_url : nil }
+
+        SendMagicLinkEmailJob.perform_later(user.id, magic_url)
+
+        render json: {
+          message: "Magic link queued. Check your email shortly.",
+          debug_url: Rails.env.development? ? magic_url : nil
+        }, status: :accepted
       end
 
       def magic_link_verify
