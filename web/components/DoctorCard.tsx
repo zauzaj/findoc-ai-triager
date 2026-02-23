@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Place, trackEvent, savePlace, unsavePlace } from '@/lib/api'
+import { Place, clinicPlaceId, trackEvent, savePlace, unsavePlace } from '@/lib/api'
 import { buildDirectionsUrl, buildEmbedUrl } from '@/lib/maps'
 import { formatDistance, formatRating } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -28,6 +28,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
   const embedUrl      = buildEmbedUrl(place)
 
   const isPremium = user?.plan === 'premium'
+  const placeId   = clinicPlaceId(place)
 
   async function handleSave() {
     // Not signed in → go to sign-in with return-to
@@ -47,10 +48,10 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
     setSaving(true)
     try {
       if (saved) {
-        await unsavePlace(place.id, token)
+        await unsavePlace(placeId, token)
         setSaved(false)
       } else {
-        await savePlace(place.id, token, specialty)
+        await savePlace(placeId, token, specialty)
         setSaved(true)
         track('doctor_saved', {
           specialist_type: specialty ?? null,
@@ -117,6 +118,17 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
         </div>
       </div>
 
+      {place.featured && (
+        <div className="mb-2">
+          <span
+            className="inline-flex items-center gap-1 rounded-full bg-primary-blue/10 text-primary-blue text-xs font-semibold px-2.5 py-0.5"
+            aria-label="Featured clinic"
+          >
+            ★ Featured
+          </span>
+        </div>
+      )}
+
       {hasInsurance && (
         <div className="mb-2">
           <span
@@ -133,7 +145,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
         {place.phone && (
           <a
             href={`tel:${place.phone}`}
-            onClick={() => trackEvent('phone_click', { google_place_id: place.id })}
+            onClick={() => trackEvent('phone_click', { google_place_id: placeId })}
             className="inline-flex items-center rounded bg-primary-blue px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-blue-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2"
             aria-label={`Call ${place.name}`}
           >
@@ -146,7 +158,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
             href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackEvent('directions', { google_place_id: place.id })}
+            onClick={() => trackEvent('directions', { google_place_id: placeId })}
             className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
             aria-label={`Get directions to ${place.name}`}
           >
@@ -170,7 +182,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
             href={place.website}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackEvent('website', { google_place_id: place.id })}
+            onClick={() => trackEvent('website', { google_place_id: placeId })}
             className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
             aria-label={`Visit website of ${place.name}`}
           >

@@ -22,7 +22,9 @@ export interface NavigateResponse {
 }
 
 export interface Place {
+  /** Backward compatible alias (same as place_id) */
   id: string
+  /** Canonical clinic identifier from Google Places */
   place_id?: string
   name: string
   rating: number
@@ -35,6 +37,7 @@ export interface Place {
   lng?: number
   directions_url?: string
   insurance_accepted: string[]
+  featured?: boolean
 }
 
 export interface PlacesSearchParams {
@@ -47,6 +50,7 @@ export interface PlacesSearchParams {
 export type TrackEventType = 'view' | 'phone_click' | 'directions' | 'website'
 
 export interface TrackEventPayload {
+  /** Backward-compatible request field consumed by backend tracking endpoints */
   google_place_id: string
   session_id?: string
   specialty?: string
@@ -106,6 +110,11 @@ export interface InsuranceProvider {
   name: string
   slug: string
   full_name: string
+}
+
+
+export function clinicPlaceId(place: Pick<Place, 'id' | 'place_id'>): string {
+  return place.place_id || place.id
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────

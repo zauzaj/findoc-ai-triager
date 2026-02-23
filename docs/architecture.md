@@ -63,7 +63,8 @@ Google:
 | insurance_providers    | Reference data (Daman, AXA, Bupa …)         |
 | clinic_insurance_links | Crowdsourced clinic ↔ insurance mappings     |
 | lead_events            | Click attribution (phone/directions/website) |
-| clinic_listings        | Future clinic portal (schema only in V2)     |
+| clinics                | Canonical place_id overlay (claim + billing) |
+| clinic_specialties     | Deterministic many-to-many specialty mapping |
 | clinic_leads_monthly   | Aggregated analytics per clinic per month    |
 | saved_places           | User favourites (Google place_id)            |
 
