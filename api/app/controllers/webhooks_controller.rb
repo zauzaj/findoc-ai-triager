@@ -26,9 +26,18 @@ class WebhooksController < ApplicationController
       user_id:    user_id
     )
 
+    Observability.log_event(event: "billing_webhook.processed", provider: "lemon_squeezy", event_name: event_name, result: "success", user_id: user_id, subscription_id: ls_sub_id)
+    Observability.increment("billing.webhook.processed", tags: { result: "success", event_name: event_name })
     render json: { received: true }
-  rescue JSON::ParserError
+  rescue JSON::ParserError => e
+    Observability.log_event(event: "billing_webhook.processed", level: :warn, provider: "lemon_squeezy", result: "invalid_json", error_message: e.message)
+    Observability.increment("billing.webhook.processed", tags: { result: "invalid_json" })
     render json: { error: "Invalid JSON" }, status: :bad_request
+  rescue => e
+    Observability.log_event(event: "billing_webhook.processed", level: :error, provider: "lemon_squeezy", event_name: event_name, result: "failure", error_class: e.class.name, error_message: e.message)
+    Observability.increment("billing.webhook.processed", tags: { result: "failure", event_name: event_name })
+    Observability.capture_exception(e, context: { controller: "webhooks", event_name: event_name })
+    render json: { error: "Webhook processing failed" }, status: :internal_server_error
   end
 
   private

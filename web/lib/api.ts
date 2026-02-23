@@ -1,5 +1,7 @@
 // All API calls go directly to the Rails API.
 // In production set NEXT_PUBLIC_RAILS_API_URL to https://your-api.herokuapp.com/api/v1
+import { logEvent, metricCounter, metricTiming } from './observability'
+
 const API = process.env.NEXT_PUBLIC_RAILS_API_URL ?? 'http://localhost:3001/api/v1'
 
 function authHeaders(token?: string | null): HeadersInit {
@@ -120,12 +122,19 @@ export function clinicPlaceId(place: Pick<Place, 'id' | 'place_id'>): string {
 // ── Auth ──────────────────────────────────────────────────────────────────
 
 export async function signInWithGoogle(idToken: string): Promise<{ token: string; user: AuthUser }> {
+  const startedAt = performance.now()
   const res = await fetch(`${API}/auth/google`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ id_token: idToken }),
   })
-  if (!res.ok) throw new Error('Google sign-in failed')
+  if (!res.ok) {
+    logEvent('auth.failure', { provider: 'google', status: res.status }, 'warn')
+    metricCounter('web.auth.failure', 1, { provider: 'google' })
+    throw new Error('Google sign-in failed')
+  }
+  metricTiming('web.auth.latency', performance.now() - startedAt, { provider: 'google' })
+  logEvent('auth.success', { provider: 'google' })
   return res.json()
 }
 
@@ -158,12 +167,20 @@ export async function navigate(
   insurance?: string,
   token?: string | null
 ): Promise<NavigateResponse> {
+  const startedAt = performance.now()
   const res = await fetch(`${API}/navigate`, {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ symptoms, insurance }),
   })
-  if (!res.ok) throw new Error(`Navigation failed: ${res.status}`)
+  if (!res.ok) {
+    logEvent('navigate.failure', { status: res.status, insurance }, 'warn')
+    metricCounter('web.navigate.failure', 1, { status: res.status })
+    throw new Error(`Navigation failed: ${res.status}`)
+  }
+  const duration = performance.now() - startedAt
+  metricTiming('web.navigate.latency', duration, { status: 'success' })
+  logEvent('navigate.success', { insurance, duration_ms: Number(duration.toFixed(1)) })
   return res.json()
 }
 
@@ -177,14 +194,23 @@ export async function getHistory(token: string): Promise<NavigationSession[]> {
 // ── Places ────────────────────────────────────────────────────────────────
 
 export async function searchPlaces(params: PlacesSearchParams, token?: string | null): Promise<Place[]> {
+  const startedAt = performance.now()
   const query = new URLSearchParams()
   if (params.specialist) query.set('specialist', params.specialist)
   if (params.lat)        query.set('lat', params.lat)
   if (params.lng)        query.set('lng', params.lng)
   if (params.insurance)  query.set('insurance', params.insurance)
   const res = await fetch(`${API}/places/search?${query}`, { headers: authHeaders(token) })
-  if (!res.ok) throw new Error('Places search failed')
+  if (!res.ok) {
+    logEvent('places_search.failure', { status: res.status, specialist: params.specialist }, 'warn')
+    metricCounter('web.places.failure', 1, { status: res.status })
+    throw new Error('Places search failed')
+  }
   const data = await res.json()
+  const duration = performance.now() - startedAt
+  metricTiming('web.places.latency', duration, { status: 'success' })
+  metricCounter('web.places.result_count', Array.isArray(data.places) ? data.places.length : 0)
+  logEvent('places_search.success', { specialist: params.specialist, insurance: params.insurance, duration_ms: Number(duration.toFixed(1)), results: data.places?.length || 0 })
   return data.places
 }
 

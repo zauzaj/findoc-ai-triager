@@ -79,3 +79,35 @@ heroku logs --tail --app findoc-api
 | WEB_URL                       | api | ✅        | CORS + magic link base URL           |
 | NEXT_PUBLIC_RAILS_API_URL     | web | ✅        | Full URL to Rails API /api/v1        |
 | NEXT_PUBLIC_GOOGLE_MAPS_KEY   | web |          | Static Maps + Embed (client-side)    |
+
+## Incident Runbook (Observability)
+
+### Required config vars
+
+```bash
+heroku config:set --app findoc-api \
+  SENTRY_DSN=https://<key>@sentry.io/<project> \
+  SENTRY_TRACES_SAMPLE_RATE=0.1 \
+  STATSD_HOST=<metrics-agent-host> \
+  STATSD_PORT=8125
+
+heroku config:set --app findoc-web \
+  NEXT_PUBLIC_SENTRY_TUNNEL_ENDPOINT=https://findoc-api.herokuapp.com/telemetry
+```
+
+### Alert handling matrix
+
+| Alert | First checks | Immediate mitigation |
+|---|---|---|
+| API error rate > 2% (10m) | `heroku logs --tail --app findoc-api`, filter `api.request.error_rate` and `error.captured` | Roll back latest deploy, disable problematic feature flag/env var |
+| API p95 latency > 1.5s (10m) | Inspect `api.request.latency` by path, check Postgres/Redis health | Scale dynos up, flush problematic cache key patterns |
+| Redis hit ratio < 70% (15m) | Compare `redis.cache.hit` vs `redis.cache.miss` by flow | Increase TTL for hot keys, validate Redis connectivity |
+| Claude/Google failure spike | Check `external_api.failure` tags for provider + code | Switch to degraded fallback messaging, retry with backoff |
+| Billing webhook failures > 0 (5m) | Search `billing_webhook.processed` with `result=failure` | Re-deliver failed webhooks from Lemon Squeezy dashboard |
+
+### Billing webhook debug checklist
+1. Validate webhook signature secret exists and matches Lemon Squeezy settings.
+2. Confirm `billing_webhook.processed` logs include `result=success`.
+3. Query recent `Subscription` rows for expected status transitions.
+4. Re-send one failed event and verify idempotent upsert behavior.
+5. Backfill analytics rows if webhook processed but analytics event creation failed.
