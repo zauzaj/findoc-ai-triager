@@ -1,6 +1,19 @@
 module Api
   module V1
     class PlacesController < ApplicationController
+      # GET /api/v1/places/search
+      # Search for clinics by specialty and location
+      #
+      # Shadow Clinic Creation:
+      #   - PlacesService.search calls Google Places API
+      #   - For each result, a shadow Clinic record is created/persisted
+      #   - This preserves analytics continuity from first appearance
+      #   - Enables future claim attachment and monetization
+      #
+      # Parameters:
+      #   - specialist: Medical specialty (required)
+      #   - lat, lng: User location (optional)
+      #   - insurance: Insurance provider slug (optional, for filtering)
       def search
         specialist = params.require(:specialist)
         places     = PlacesService.search(
@@ -9,6 +22,7 @@ module Api
           lng:       params[:lng],
           insurance: params[:insurance]
         )
+        # Enrich results with verified insurance data from local database
         places = enrich_insurance(places, params[:insurance]) if params[:insurance].present?
         render json: { places: places }
       end

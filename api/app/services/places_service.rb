@@ -45,7 +45,17 @@ class PlacesService
     )
 
     return [] unless response.success?
-    (response.parsed_response["places"] || []).map { |p| format_place(p) }
+
+    # Format results and create shadow records for each clinic
+    results = (response.parsed_response["places"] || []).map { |p| format_place(p) }
+
+    # Shadow Clinic Creation: Persist each clinic for analytics continuity
+    # This happens early to preserve accurate lead attribution from day 1
+    results.each do |place|
+      Clinic.find_or_create_shadow!(place_id: place[:place_id])
+    end
+
+    results
   end
 
   def self.fetch_details(place_id)
@@ -58,7 +68,14 @@ class PlacesService
       timeout: 10
     )
     return nil unless response.success?
-    format_place(response.parsed_response)
+
+    # Format result
+    place = format_place(response.parsed_response)
+
+    # Shadow Clinic Creation: Persist clinic for analytics continuity
+    Clinic.find_or_create_shadow!(place_id: place[:place_id])
+
+    place
   end
 
   def self.format_place(p)
