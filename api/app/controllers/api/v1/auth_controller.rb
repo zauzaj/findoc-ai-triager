@@ -7,7 +7,12 @@ module Api
         id_token = params.require(:id_token)
         payload  = GoogleAuthService.verify(id_token)
         user     = User.from_google(payload)
+        Observability.log_event(event: "auth.success", provider: "google", user_id: user.id, request_id: request.request_id)
         render json: auth_response(user)
+      rescue => e
+        Observability.log_event(event: "auth.failure", level: :warn, provider: "google", reason: e.message, request_id: request.request_id)
+        Observability.capture_exception(e, context: { provider: "google", request_id: request.request_id })
+        raise
       end
 
       def apple
@@ -17,7 +22,12 @@ module Api
         user.email = email if user.new_record?
         user.name  = params[:name] if params[:name].present? && user.name.blank?
         user.save!
+        Observability.log_event(event: "auth.success", provider: "apple", user_id: user.id, request_id: request.request_id)
         render json: auth_response(user)
+      rescue => e
+        Observability.log_event(event: "auth.failure", level: :warn, provider: "apple", reason: e.message, request_id: request.request_id)
+        Observability.capture_exception(e, context: { provider: "apple", request_id: request.request_id })
+        raise
       end
 
       def magic_link
@@ -37,7 +47,12 @@ module Api
         user  = User.find_by!(magic_link_token: token)
         return render json: { error: "Magic link expired" }, status: :unauthorized unless user.magic_link_valid?(token)
         user.consume_magic_link!
+        Observability.log_event(event: "auth.success", provider: "magic_link", user_id: user.id, request_id: request.request_id)
         render json: auth_response(user)
+      rescue => e
+        Observability.log_event(event: "auth.failure", level: :warn, provider: "magic_link", reason: e.message, request_id: request.request_id)
+        Observability.capture_exception(e, context: { provider: "magic_link", request_id: request.request_id })
+        raise
       end
 
       def me

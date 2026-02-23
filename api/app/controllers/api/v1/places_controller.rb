@@ -2,6 +2,8 @@ module Api
   module V1
     class PlacesController < ApplicationController
       def search
+        specialist = nil
+        insurance = nil
         specialist = params.require(:specialist)
         insurance = params[:insurance].presence
 
@@ -16,7 +18,12 @@ module Api
         places = enrich_insurance(places, insurance) if insurance.present?
         places = apply_featured_slot(places, specialist: specialist, insurance: insurance)
 
+        Observability.log_event(event: "places_search.success", specialist: specialist, insurance: insurance, result_count: places.size, request_id: request.request_id)
         render json: { places: places }
+      rescue => e
+        Observability.log_event(event: "places_search.failure", level: :error, specialist: specialist, insurance: insurance, error_class: e.class.name, error_message: e.message, request_id: request.request_id)
+        Observability.capture_exception(e, context: { action: "places#search", request_id: request.request_id })
+        render json: { error: "Places search unavailable" }, status: :service_unavailable
       end
 
       def show

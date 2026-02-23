@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { NavigationProvider } from '@/contexts/NavigationContext'
 import { SITE_NAME } from '@/lib/constants'
 import InstallPrompt from '@/components/InstallPrompt'
+import ClientInstrumentation from '@/components/ClientInstrumentation'
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1">{children}</main>
             <Footer />
             <InstallPrompt />
+            <ClientInstrumentation />
           </NavigationProvider>
         </AuthProvider>
       </body>

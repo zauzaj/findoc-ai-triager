@@ -80,3 +80,40 @@ Google:
 | Maps           | Google Places (New)        | UAE coverage, required Google attribution         |
 | Auth           | JWT (HS256, 30d)           | Stateless, works across web + future mobile       |
 | Payments (TBD) | Lemon Squeezy              | Simple SaaS billing for clinic portal             |
+
+## Observability Baseline
+
+### Error Tracking
+- Rails API initializes Sentry in `api/config/initializers/sentry.rb` when `SENTRY_DSN` is present.
+- Next.js web initializes runtime error tracking through `web/instrumentation.ts` and `web/sentry.*.config.ts`.
+- Both API and web emit structured `error.captured` events with stable fields: `service`, `env`, `event`, `timestamp`, and flow-specific context.
+
+### Structured Logging (critical flows)
+- **Auth success/failure**: `auth.success`, `auth.failure`.
+- **Navigate success/failure + latency**: `navigate.success`, `navigate.failure`, plus `navigate.provider.latency` timer.
+- **Places cache behavior**: `places_search.cache` (hit/miss), `places_search.success/failure`.
+- **Billing webhook processing**: `billing_webhook.processed` with `result` (`success`, `invalid_json`, `failure`).
+
+### Counters/Timers
+- Request envelope:
+  - `api.request.rate` counter
+  - `api.request.error_rate` counter (`status >= 500`)
+  - `api.request.latency` timer (p95 computed in APM/metrics backend)
+- Redis cache hit ratio:
+  - `redis.cache.hit`, `redis.cache.miss` (derive hit ratio = hit / (hit + miss))
+- External API failures:
+  - `external_api.failure` tagged for `provider=claude` and `provider=google_places`
+
+### Alert Thresholds
+- **API error rate high**: `api.request.error_rate / api.request.rate > 2%` for 10m.
+- **API p95 latency high**: `p95(api.request.latency) > 1500ms` for 10m.
+- **Navigate provider latency high**: `p95(navigate.provider.latency) > 5000ms` for 10m.
+- **Redis cache hit ratio low**: `< 0.70` for 15m.
+- **External API failures**:
+  - Claude failures `external_api.failure{provider:claude} > 10/5m`
+  - Google failures `external_api.failure{provider:google_places} > 20/5m`
+- **Billing webhook failures**: `billing.webhook.processed{result:failure} > 0` for 5m.
+
+### Runbooks
+- Primary ops runbook: `docs/heroku-deploy.md#incident-runbook-observability`
+- Billing/webhooks checks: `docs/heroku-deploy.md#billing-webhook-debug-checklist`

@@ -10,6 +10,7 @@ module Api
         lat       = params[:lat]
         lng       = params[:lng]
 
+        started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         result = AiNavigationService.navigate(symptoms: symptoms, insurance: insurance)
 
         session = NavigationSession.create!(
@@ -35,6 +36,10 @@ module Api
           current_user.increment!(:navigations_this_month)
         end
 
+        duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000.0
+        Observability.log_event(event: "navigate.success", user_id: current_user&.id, specialist: result[:specialist], urgency: result[:urgency], duration_ms: duration_ms.round(1), request_id: request.request_id)
+        Observability.timing("navigate.provider.latency", duration_ms, tags: { provider: "claude" })
+
         render json: {
           session_token:          session.session_token,
           specialist:             result[:specialist],
@@ -44,7 +49,9 @@ module Api
           navigations_this_month: current_user&.navigations_this_month
         }
       rescue => e
-        Rails.logger.error "[navigate#create] #{e.class}: #{e.message}"
+        Observability.log_event(event: "navigate.failure", level: :error, user_id: current_user&.id, error_class: e.class.name, error_message: e.message, request_id: request.request_id)
+        Observability.increment("navigate.failure", tags: { error_class: e.class.name })
+        Observability.capture_exception(e, context: { action: "navigate#create", user_id: current_user&.id, request_id: request.request_id })
         render json: { error: "Navigation unavailable. Please try again." }, status: :service_unavailable
       end
 

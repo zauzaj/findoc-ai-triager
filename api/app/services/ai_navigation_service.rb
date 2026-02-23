@@ -7,10 +7,17 @@ class AiNavigationService
   def self.navigate(symptoms:, insurance: nil)
     cache_key = "navigate:v1:#{Digest::MD5.hexdigest("#{symptoms.downcase.strip}::#{insurance}")}"
 
-    Rails.cache.fetch(cache_key, expires_in: CACHE_TTL) do
-      result = call_claude(symptoms: symptoms, insurance: insurance)
-      parse_response(result)
+    cached = Rails.cache.read(cache_key)
+    if cached
+      Observability.increment("redis.cache.hit", tags: { flow: "navigate" })
+      return cached
     end
+
+    Observability.increment("redis.cache.miss", tags: { flow: "navigate" })
+    result = call_claude(symptoms: symptoms, insurance: insurance)
+    parsed = parse_response(result)
+    Rails.cache.write(cache_key, parsed, expires_in: CACHE_TTL)
+    parsed
   end
 
   private
@@ -39,8 +46,17 @@ class AiNavigationService
       timeout: 30
     )
 
-    raise "Claude API error #{response.code}" unless response.success?
+    unless response.success?
+      Observability.increment("external_api.failure", tags: { provider: "claude", code: response.code })
+      Observability.log_event(event: "external_api.failure", level: :warn, provider: "claude", endpoint: "messages", code: response.code)
+      raise "Claude API error #{response.code}"
+    end
+
     response.parsed_response
+  rescue => e
+    Observability.increment("external_api.failure", tags: { provider: "claude", error_class: e.class.name })
+    Observability.capture_exception(e, context: { provider: "claude", endpoint: "messages" })
+    raise
   end
 
   def self.parse_response(response)
