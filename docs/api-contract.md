@@ -161,6 +161,20 @@ All tracking endpoints accept optional `Authorization` header.
 // Response 200: { "ok": true }
 ```
 
+
+## Rate Limits
+
+The API enforces Redis-backed request throttling on high-risk public endpoints. Limits are evaluated per client IP and per `X-Anonymous-Id` (when present).
+
+| Route | Limit |
+|---|---:|
+| `POST /auth/magic_link` | 5 req/min |
+| `POST /navigate` | 30 req/min |
+| `GET /places/search` | 60 req/min |
+| `POST /tracking/*` | 120 req/min |
+
+When a limit is exceeded, the API returns `429 Too Many Requests` using the standard error schema.
+
 ---
 
 ## Error Format
@@ -169,4 +183,5 @@ All tracking endpoints accept optional `Authorization` header.
 { "error": "Not Found",             "message": "..." }
 { "error": "Unprocessable Entity",  "message": "..." }
 { "error": "Bad Request",           "message": "param is missing: symptoms" }
+{ "error": "Too Many Requests",     "message": "Rate limit exceeded" }
 ```
