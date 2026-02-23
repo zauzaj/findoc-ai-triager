@@ -95,7 +95,8 @@ Sign in with Google ID token.
       "rating": 4.5,
       "phone": "+971 4 123 4567",
       "website": "https://example.com",
-      "insurance_accepted": ["daman"]
+      "insurance_accepted": ["daman"],
+      "featured": false
     }
   ]
 }
@@ -133,7 +134,7 @@ Returns full place details. Cached 7 days.
 ### POST /clinic_insurance  🔒
 ```json
 { "google_place_id": "ChIJ...", "insurance_slug": "daman" }
-// Response 201: { "clinic_insurance": { "id": 5, "verified": false } }
+// Response 201: { "clinic_insurance": { "id": 5, "verified": false, "confidence": "low", "source": "manual" } }
 ```
 
 ---
@@ -141,6 +142,8 @@ Returns full place details. Cached 7 days.
 ## Tracking
 
 All tracking endpoints accept optional `Authorization` header.
+
+> Note: request key remains `google_place_id` for backward compatibility; it maps to canonical clinic identity (`place_id`).
 
 ### POST /tracking/view
 ### POST /tracking/phone_click

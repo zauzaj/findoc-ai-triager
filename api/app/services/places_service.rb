@@ -3,8 +3,8 @@ class PlacesService
   DETAILS_URL = "https://places.googleapis.com/v1/places"
   SEARCH_TTL  = 12.hours
   DETAILS_TTL = 7.days
-  SEARCH_FIELDS = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri"
-  DETAILS_FIELDS = "id,displayName,formattedAddress,location,rating,nationalPhoneNumber,websiteUri,googleMapsUri,regularOpeningHours,photos"
+  SEARCH_FIELDS = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.types"
+  DETAILS_FIELDS = "id,displayName,formattedAddress,location,rating,nationalPhoneNumber,websiteUri,googleMapsUri,regularOpeningHours,photos,types"
 
   def self.search(specialty:, lat: nil, lng: nil, insurance: nil)
     lat_r = lat.to_f.round(2)
@@ -74,7 +74,9 @@ class PlacesService
       website:           p["websiteUri"],
       maps_url:          p["googleMapsUri"],
       distance:          0,
-      insurance_accepted: []
+      insurance_accepted: [],
+      google_types:       p["types"] || [],
+      featured:           false
     }
   end
 end

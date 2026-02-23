@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { searchPlaces, trackEvent, Place } from '@/lib/api'
+import { clinicPlaceId, searchPlaces, trackEvent, Place } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigation } from '@/contexts/NavigationContext'
 import { useAnalytics } from '@/hooks/useAnalytics'
@@ -63,7 +63,7 @@ export default function ResultsClient({
         setPlaces(data)
 
         data.forEach((place) => {
-          trackEvent('view', { google_place_id: place.id, specialty: specialist }, token)
+          trackEvent('view', { google_place_id: clinicPlaceId(place), specialty: specialist }, token)
         })
 
         if (!navRecorded) {
@@ -178,7 +178,7 @@ export default function ResultsClient({
 
         <ul className="space-y-3" aria-label="Clinic results">
           {visiblePlaces.map((place) => (
-            <li key={place.id}>
+            <li key={clinicPlaceId(place)}>
               <DoctorCard place={place} insurance={insurance} />
             </li>
           ))}
