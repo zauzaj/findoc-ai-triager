@@ -137,6 +137,7 @@ bundle install
 cp ../.env.example .env.development.local
 # edit .env.development.local — at minimum set:
 #   DATABASE_URL, REDIS_URL, ANTHROPIC_API_KEY, GOOGLE_PLACES_API_KEY
+#   Optional: MOCK_EXTERNAL_APIS=true, MOCK_API_PROFILE=development
 
 # Create DB, run migrations, seed insurance providers
 rails db:create db:migrate db:seed
@@ -180,6 +181,11 @@ npm run dev
 | `JWT_SECRET` | yes | HS256 signing secret (min 32 chars) |
 | `ANTHROPIC_API_KEY` | yes | Claude API key |
 | `GOOGLE_PLACES_API_KEY` | yes | Google Places API (New) key |
+| `AI_PROVIDER` | no | `anthropic` (default) or `openai` for triage provider |
+| `OPENAI_API_KEY` | conditional | Required when `AI_PROVIDER=openai` |
+| `MOCK_EXTERNAL_APIS` | no | Use local fixture responses for Google Places + AI calls |
+| `MOCK_API_PROFILE` | no | Fixture profile name from `api/config/mocks/external_apis.yml` |
+| `SEED_MOCK_DATA` | no | Seed mock clinic↔insurance rows in development/test |
 | `GOOGLE_CLIENT_ID_WEB` | no | Google OAuth web client ID |
 | `WEB_URL` | yes | Frontend URL (for CORS + magic-link emails) |
 | `NEXT_PUBLIC_RAILS_API_URL` | yes | Rails API base URL seen by browser |

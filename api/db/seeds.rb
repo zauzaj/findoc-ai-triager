@@ -37,3 +37,24 @@ InsuranceProvider.find_or_create_by!(slug: "neuron")     { |p| p.name = "Neuron"
 InsuranceProvider.find_or_create_by!(slug: "allianz")    { |p| p.name = "Allianz";         p.full_name = "Allianz Care UAE" }
 
 puts "Seeded #{InsuranceProvider.count} insurance providers"
+
+# ── Mock data for local/dev testing ──────────────────────────────────────────
+if ActiveModel::Type::Boolean.new.cast(ENV.fetch("SEED_MOCK_DATA", Rails.env.development? || Rails.env.test?))
+  mock_links = [
+    { google_place_id: "mock-cardio-01", insurance_slug: "daman" },
+    { google_place_id: "mock-cardio-02", insurance_slug: "axa" },
+    { google_place_id: "mock-derma-01", insurance_slug: "nextcare" },
+    { google_place_id: "mock-gp-01", insurance_slug: "bupa" }
+  ]
+
+  mock_links.each do |attrs|
+    provider = InsuranceProvider.find_by!(slug: attrs[:insurance_slug])
+    ClinicInsuranceLink.find_or_create_by!(
+      google_place_id: attrs[:google_place_id],
+      insurance_provider: provider,
+      insurance_slug: provider.slug
+    )
+  end
+
+  puts "Seeded #{mock_links.size} mock clinic-insurance links"
+end

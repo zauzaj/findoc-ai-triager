@@ -26,6 +26,11 @@ class PlacesService
   private
 
   def self.fetch_search(specialty:, lat:, lng:)
+    if MockExternalApiService.enabled?
+      mocked_places = MockExternalApiService.google_places_search(specialty: specialty)
+      return mocked_places.map { |place| format_place(place) }
+    end
+
     body = { textQuery: "#{specialty} clinic", maxResultCount: 20 }
     if lat != 0.0 && lng != 0.0
       body[:locationBias] = {
@@ -49,6 +54,11 @@ class PlacesService
   end
 
   def self.fetch_details(place_id)
+    if MockExternalApiService.enabled?
+      mocked_place = MockExternalApiService.google_place_details(place_id: place_id)
+      return mocked_place ? format_place(mocked_place) : nil
+    end
+
     response = HTTParty.get(
       "#{DETAILS_URL}/#{place_id}",
       headers: {
