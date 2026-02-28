@@ -13,27 +13,38 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-      <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-semibold text-text-primary leading-tight mb-4 text-balance">
-          Not sure which doctor to see in the UAE?
-        </h1>
-        <p className="text-text-muted text-base">
-          Independent health navigation platform. Describe your symptoms and we&apos;ll guide you
-          to the right specialist.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+        <section className="rounded-3xl border border-white/60 bg-white/85 p-7 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur sm:p-10">
+          <p className="mb-4 inline-flex rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
+            AI-powered clinic triage
+          </p>
+          <h1 className="mb-4 text-3xl font-extrabold leading-tight text-slate-900 sm:text-5xl text-balance">
+            Find the right specialist faster.
+          </h1>
+          <p className="mb-8 max-w-xl text-base text-slate-600 sm:text-lg">
+            Describe your symptoms in plain language. We&apos;ll guide you to the right specialty and
+            help you filter by accepted insurance in the UAE.
+          </p>
+          <SymptomInput />
+        </section>
 
-      <div className="bg-white rounded border border-card-border p-6 sm:p-8">
-        <SymptomInput />
-      </div>
-
-      <div className="mt-8 p-4 bg-soft-blue rounded border border-soft-blue">
-        <p className="text-xs text-text-muted leading-relaxed">
-          <strong className="text-text-primary">Independent guidance only.</strong> Findoc UAE
-          does not provide medical diagnoses. Always consult a licensed healthcare professional.
-          In an emergency, call <strong>998</strong>.
-        </p>
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-bold text-slate-900">What you get</h2>
+            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+              <li>• Clear specialist recommendation</li>
+              <li>• Insurance-aware clinic matching</li>
+              <li>• Neutral, independent guidance</li>
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <p className="text-xs leading-relaxed text-amber-900">
+              <strong>Not medical advice:</strong> Findoc UAE provides navigation support only. In
+              emergencies, call <strong>998</strong>.
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
   )

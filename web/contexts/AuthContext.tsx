@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { AuthUser, getMe, mergeAnonymousCount } from '@/lib/api'
-import { getAnonNavCount, getOrCreateVisitorId, getStoredLocale } from '@/lib/visitorTracking'
+import { getAnonNavCount, getOrCreateVisitorId } from '@/lib/visitorTracking'
 import { track } from '@/lib/analytics'
 
 interface AuthContextValue {
@@ -42,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const anonCount  = getAnonNavCount()
     const anonymousId = getOrCreateVisitorId()
-    const language   = getStoredLocale()
     let   finalUser  = u
 
     if (anonCount > 0) {
@@ -53,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         track('navigation_counter_transferred', {
           navigation_count_before_transfer: anonCount,
           navigation_count_after_transfer:  finalUser.navigations_this_month,
-        }, { token: t, user_id: finalUser.id, language })
+        }, { token: t, user_id: finalUser.id })
 
         setUser(finalUser)
       } catch {
@@ -73,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token:    t,
       user_id:  finalUser.id,
       emirate:  finalUser.emirate,
-      language,
     })
 
     const isNew = !u.emirate
