@@ -1,0 +1,131 @@
+default: &default
+  google_places:
+    search:
+      default:
+        - id: "mock-gp-01"
+          displayName:
+            text: "Al Noor Family Clinic"
+          formattedAddress: "Khalidiyah, Abu Dhabi, UAE"
+          location:
+            latitude: 24.4667
+            longitude: 54.3667
+          rating: 4.2
+          nationalPhoneNumber: "+971 2 555 0101"
+          websiteUri: "https://alnoor-family.example"
+          googleMapsUri: "https://maps.google.com/?q=mock-gp-01"
+          types: ["doctor", "health", "point_of_interest"]
+      by_specialty:
+        cardiologist:
+          - id: "mock-cardio-01"
+            displayName:
+              text: "HeartCare Specialist Center"
+            formattedAddress: "Al Wasl Rd, Dubai, UAE"
+            location:
+              latitude: 25.1666
+              longitude: 55.2333
+            rating: 4.8
+            nationalPhoneNumber: "+971 4 555 1100"
+            websiteUri: "https://heartcare.example"
+            googleMapsUri: "https://maps.google.com/?q=mock-cardio-01"
+            types: ["cardiologist", "doctor", "health"]
+          - id: "mock-cardio-02"
+            displayName:
+              text: "Pulse Cardiology Clinic"
+            formattedAddress: "Al Nahda, Sharjah, UAE"
+            location:
+              latitude: 25.3022
+              longitude: 55.3764
+            rating: 4.3
+            nationalPhoneNumber: "+971 6 555 2233"
+            websiteUri: "https://pulse-cardio.example"
+            googleMapsUri: "https://maps.google.com/?q=mock-cardio-02"
+            types: ["cardiologist", "doctor", "health"]
+        dermatologist:
+          - id: "mock-derma-01"
+            displayName:
+              text: "SkinFirst Dermatology"
+            formattedAddress: "Jumeirah, Dubai, UAE"
+            location:
+              latitude: 25.2048
+              longitude: 55.2708
+            rating: 4.6
+            nationalPhoneNumber: "+971 4 555 3344"
+            websiteUri: "https://skinfirst.example"
+            googleMapsUri: "https://maps.google.com/?q=mock-derma-01"
+            types: ["dermatologist", "doctor", "health"]
+    details:
+      default:
+        id: "mock-gp-01"
+        displayName:
+          text: "Al Noor Family Clinic"
+        formattedAddress: "Khalidiyah, Abu Dhabi, UAE"
+        location:
+          latitude: 24.4667
+          longitude: 54.3667
+        rating: 4.2
+        nationalPhoneNumber: "+971 2 555 0101"
+        websiteUri: "https://alnoor-family.example"
+        googleMapsUri: "https://maps.google.com/?q=mock-gp-01"
+        types: ["doctor", "health", "point_of_interest"]
+      by_place_id:
+        mock-cardio-01:
+          id: "mock-cardio-01"
+          displayName:
+            text: "HeartCare Specialist Center"
+          formattedAddress: "Al Wasl Rd, Dubai, UAE"
+          location:
+            latitude: 25.1666
+            longitude: 55.2333
+          rating: 4.8
+          nationalPhoneNumber: "+971 4 555 1100"
+          websiteUri: "https://heartcare.example"
+          googleMapsUri: "https://maps.google.com/?q=mock-cardio-01"
+          types: ["cardiologist", "doctor", "health"]
+        mock-derma-01:
+          id: "mock-derma-01"
+          displayName:
+            text: "SkinFirst Dermatology"
+          formattedAddress: "Jumeirah, Dubai, UAE"
+          location:
+            latitude: 25.2048
+            longitude: 55.2708
+          rating: 4.6
+          nationalPhoneNumber: "+971 4 555 3344"
+          websiteUri: "https://skinfirst.example"
+          googleMapsUri: "https://maps.google.com/?q=mock-derma-01"
+          types: ["dermatologist", "doctor", "health"]
+
+  ai:
+    anthropic:
+      default:
+        content:
+          - type: "text"
+            text: '{"specialist":"General Practitioner","urgency":"low","confidence":0.72,"explanation":"Symptoms are nonspecific. Start with a general practitioner for first-line evaluation."}'
+      rules:
+        - keywords: ["chest pain", "tightness", "shortness of breath"]
+          response:
+            content:
+              - type: "text"
+                text: '{"specialist":"Cardiologist","urgency":"high","confidence":0.93,"explanation":"Chest pain and breathing symptoms can indicate cardiac risk. Seek urgent cardiology assessment today."}'
+        - keywords: ["rash", "itch", "eczema", "skin"]
+          response:
+            content:
+              - type: "text"
+                text: '{"specialist":"Dermatologist","urgency":"medium","confidence":0.89,"explanation":"Skin-focused symptoms align with dermatology for targeted diagnosis and treatment."}'
+    openai:
+      default:
+        choices:
+          - message:
+              content: '{"specialist":"General Practitioner","urgency":"low","confidence":0.69,"explanation":"Begin with a GP to triage and route if specialist care is needed."}'
+      rules:
+        - keywords: ["chest pain", "tightness", "shortness of breath"]
+          response:
+            choices:
+              - message:
+                  content: '{"specialist":"Cardiologist","urgency":"high","confidence":0.92,"explanation":"Potential cardiopulmonary warning signs. Arrange urgent cardiology review."}'
+
+development:
+  <<: *default
+
+test:
+  <<: *default
