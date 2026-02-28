@@ -3,25 +3,23 @@ import { SITE_NAME } from '@/lib/constants'
 
 export default function Footer() {
   return (
-    <footer className="bg-dark-charcoal mt-auto">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <footer className="mt-auto border-t border-slate-200 bg-white/70 backdrop-blur">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+        <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <p className="font-semibold text-white text-sm">{SITE_NAME}</p>
-            <p className="text-xs text-white/60 mt-1">
-              Independent health navigation for the UAE
-            </p>
+            <p className="text-sm font-bold text-slate-900">{SITE_NAME}</p>
+            <p className="mt-1 text-xs text-slate-500">Independent health navigation for the UAE</p>
           </div>
 
           <nav aria-label="Footer navigation">
-            <ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/60">
+            <ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-slate-500">
               <li>
-                <Link href="/for-clinics" className="hover:text-white transition-colors">
+                <Link href="/for-clinics" className="hover:text-slate-900 transition-colors">
                   For Clinics
                 </Link>
               </li>
               <li>
-                <Link href="/blog/health-navigation-uae" className="hover:text-white transition-colors">
+                <Link href="/blog/health-navigation-uae" className="hover:text-slate-900 transition-colors">
                   Blog
                 </Link>
               </li>
@@ -29,8 +27,8 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-white/10">
-          <p className="text-xs text-white/50">
+        <div className="mt-6 border-t border-slate-200 pt-5">
+          <p className="text-xs text-slate-500">
             &copy; {new Date().getFullYear()} {SITE_NAME}. This platform provides independent
             health navigation guidance and does not constitute medical advice. Always consult a
             qualified healthcare professional.

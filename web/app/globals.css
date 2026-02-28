@@ -2,19 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap');
 
 :root {
-  --background: #F9FBFD;
-  --foreground: #1F2937;
+  --background: #f4f7fb;
+  --foreground: #0f172a;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: 'Roboto', system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.14), transparent 35%),
+    radial-gradient(circle at top left, rgba(129, 140, 248, 0.1), transparent 30%),
+    var(--background);
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 @layer utilities {

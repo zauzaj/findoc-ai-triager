@@ -28,39 +28,39 @@ export default function BlogPage({ params }: BlogPageProps) {
     .join(' ')
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <div className="mb-8">
+    <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mb-6">
         <Link
           href="/"
-          className="text-xs text-text-muted hover:text-text-primary transition-colors"
+          className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
         >
           &larr; Back to home
         </Link>
       </div>
 
-      <article>
-        <header className="mb-8">
-          <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
+      <article className="rounded-3xl border border-white/70 bg-white/90 p-7 shadow-[0_16px_45px_rgba(15,23,42,0.08)] backdrop-blur sm:p-10">
+        <header className="mb-8 border-b border-slate-200 pb-6">
+          <p className="mb-3 inline-flex rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
             {SITE_NAME} Blog
           </p>
-          <h1 className="text-3xl font-semibold text-text-primary mb-4 text-balance">
+          <h1 className="text-3xl font-extrabold text-slate-900 sm:text-4xl text-balance">
             {title}
           </h1>
+          <p className="mt-3 text-sm text-slate-500">Practical health navigation guides for UAE residents.</p>
         </header>
 
-        <div className="bg-soft-blue rounded border border-soft-blue p-5 text-sm text-text-muted">
-          <strong className="text-text-primary">Coming soon.</strong> We&apos;re preparing
-          practical health navigation guides for people living and working in the UAE. Check back
-          soon.
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+          <strong className="text-slate-900">Coming soon.</strong> We&apos;re preparing practical
+          health navigation guides to help people in the UAE choose the right specialist and next
+          step faster.
         </div>
 
-        <div className="mt-8 pt-8 border-t border-card-border">
-          <h2 className="text-base font-semibold text-text-primary mb-4">
-            Start navigating your health today
-          </h2>
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="mb-2 text-base font-bold text-slate-900">Start navigating your health today</h2>
+          <p className="mb-4 text-sm text-slate-600">Tell us your symptoms and get specialist guidance in minutes.</p>
           <Link
             href="/"
-            className="inline-flex items-center rounded bg-primary-blue px-4 py-2 text-sm font-semibold text-white hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors"
+            className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors"
           >
             Find a specialist
           </Link>

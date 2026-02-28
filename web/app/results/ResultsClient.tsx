@@ -14,32 +14,32 @@ import UpgradeModal from '@/components/UpgradeModal'
 import ResultLimitPrompt from '@/components/ResultLimitPrompt'
 
 interface ResultsClientProps {
-  specialist:     string
-  lat?:           string
-  lng?:           string
-  insurance?:     string
-  urgency?:       string
+  specialist: string
+  lat?: string
+  lng?: string
+  insurance?: string
+  urgency?: string
   serverNavCount?: number
 }
 
 export default function ResultsClient({
   specialist, lat, lng, insurance, urgency, serverNavCount,
 }: ResultsClientProps) {
-  const { user, token }   = useAuth()
-  const { track }         = useAnalytics()
+  const { user, token } = useAuth()
+  const { track } = useAnalytics()
   const {
     activePrompt, upgradeModalSuppressed,
     dismissPrompt, recordNavigation, navCount,
   } = useNavigation()
 
-  const [places,            setPlaces]            = useState<Place[]>([])
-  const [loading,           setLoading]           = useState(true)
-  const [error,             setError]             = useState('')
-  const [navRecorded,       setNavRecorded]       = useState(false)
+  const [places, setPlaces] = useState<Place[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [navRecorded, setNavRecorded] = useState(false)
   const [showResultUpgrade, setShowResultUpgrade] = useState(false)
 
-  const isPremium  = user?.plan === 'premium'
-  const isLapsed   = !isPremium && !!(
+  const isPremium = user?.plan === 'premium'
+  const isLapsed = !isPremium && !!(
     user?.ls_subscription_status === 'cancelled' ||
     user?.ls_subscription_status === 'expired'
   )
@@ -47,12 +47,12 @@ export default function ResultsClient({
   const returnTo = encodeURIComponent(
     `/results?specialist=${encodeURIComponent(specialist)}` +
     (insurance ? `&insurance=${encodeURIComponent(insurance)}` : '') +
-    (urgency   ? `&urgency=${encodeURIComponent(urgency)}`     : '') +
-    (lat       ? `&lat=${lat}`                                  : '') +
-    (lng       ? `&lng=${lng}`                                  : '')
+    (urgency ? `&urgency=${encodeURIComponent(urgency)}` : '') +
+    (lat ? `&lat=${lat}` : '') +
+    (lng ? `&lng=${lng}` : '')
   )
-  const signInHref    = `/auth/signin?return_to=${returnTo}`
-  const upgradeHref   = token ? undefined : signInHref   // for lapsed-premium CTA
+  const signInHref = `/auth/signin?return_to=${returnTo}`
+  const upgradeHref = token ? undefined : signInHref
 
   useEffect(() => {
     async function fetchPlaces() {
@@ -73,22 +73,21 @@ export default function ResultsClient({
             : undefined
 
           recordNavigation({
-            isPremium:       isPremium,
-            isLapsed:        isLapsed,
+            isPremium,
+            isLapsed,
             isAuthenticated: !!user,
-            serverCount:     effectiveServerCount,
+            serverCount: effectiveServerCount,
           })
 
-          // navigation_completed analytics event
           const eventName = isPremium ? 'premium_navigation_completed' : 'navigation_completed'
-          const newCount  = effectiveServerCount ?? navCount + 1
+          const newCount = effectiveServerCount ?? navCount + 1
           track(eventName, {
-            specialist_type:              specialist,
-            insurance_selected:           insurance ?? null,
-            total_matching_results:       data.length,
-            results_shown:                isPremium ? data.length : Math.min(data.length, FREE_RESULT_LIMIT),
+            specialist_type: specialist,
+            insurance_selected: insurance ?? null,
+            total_matching_results: data.length,
+            results_shown: isPremium ? data.length : Math.min(data.length, FREE_RESULT_LIMIT),
             navigation_number_this_month: newCount,
-            is_capped:                    !isPremium && data.length > FREE_RESULT_LIMIT,
+            is_capped: !isPremium && data.length > FREE_RESULT_LIMIT,
           })
         }
       } catch {
@@ -99,10 +98,8 @@ export default function ResultsClient({
     }
 
     fetchPlaces()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [specialist, lat, lng, insurance])
+  }, [specialist, lat, lng, insurance]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fire upgrade_modal_suppressed event when the modal was suppressed by cooldown
   useEffect(() => {
     if (upgradeModalSuppressed) {
       track('upgrade_modal_suppressed', {
@@ -112,7 +109,7 @@ export default function ResultsClient({
   }, [upgradeModalSuppressed]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const visiblePlaces = isPremium ? places : places.slice(0, FREE_RESULT_LIMIT)
-  const hiddenCount   = isPremium ? 0 : Math.max(0, places.length - FREE_RESULT_LIMIT)
+  const hiddenCount = isPremium ? 0 : Math.max(0, places.length - FREE_RESULT_LIMIT)
 
   function handleResultLimitUpgradeClick() {
     setShowResultUpgrade(true)
@@ -121,15 +118,15 @@ export default function ResultsClient({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20" aria-live="polite">
-        <div className="w-8 h-8 rounded-full border-2 border-primary-blue border-t-transparent animate-spin mb-4" aria-hidden="true" />
-        <p className="text-text-muted text-sm">Finding clinics near you&hellip;</p>
+        <div className="mb-4 h-9 w-9 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" aria-hidden="true" />
+        <p className="text-sm text-slate-500">Finding clinics near you&hellip;</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="rounded border border-status-error-border bg-status-error-bg p-4 text-sm text-status-error-text" role="alert">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
         {error}
       </div>
     )
@@ -137,8 +134,8 @@ export default function ResultsClient({
 
   if (places.length === 0) {
     return (
-      <div className="rounded border border-card-border bg-white p-8 text-center">
-        <p className="text-text-muted text-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <p className="text-sm text-slate-600">
           No clinics found for your search criteria. Try adjusting your filters.
         </p>
       </div>
@@ -146,10 +143,6 @@ export default function ResultsClient({
   }
 
   const showUpgradeModal = activePrompt === 'upgrade' || showResultUpgrade
-
-  // Determine whether to show an auth/nudge banner
-  // Auth banners: anonymous users only (nav #1/#2/#3)
-  // Lapsed-premium banner: signed-in free users who previously had premium (nav #3)
   const showBanner =
     activePrompt !== 'none' &&
     activePrompt !== 'upgrade' &&
@@ -166,15 +159,15 @@ export default function ResultsClient({
         />
       )}
 
-      <div className={`space-y-4 ${showUpgradeModal ? 'opacity-40 pointer-events-none select-none' : ''}`}>
+      <div className={`space-y-5 ${showUpgradeModal ? 'pointer-events-none select-none opacity-40' : ''}`}>
         {urgency && urgency !== 'low' && <UrgencyBanner urgency={urgency} />}
 
         <StaticMapPreview places={visiblePlaces} userLat={lat} userLng={lng} />
 
-        <p className="text-xs text-text-muted">
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs text-slate-600 shadow-sm">
           {places.length} clinic{places.length !== 1 ? 's' : ''} found
           {insurance ? ` · filtered by ${insurance}` : ''}
-        </p>
+        </div>
 
         <ul className="space-y-3" aria-label="Clinic results">
           {visiblePlaces.map((place) => (
@@ -202,9 +195,9 @@ export default function ResultsClient({
           />
         )}
 
-        <p className="text-xs text-text-muted pt-2 border-t border-card-border">
-          Results are not ranked by quality. Sorted by proximity and rating only. Findoc does
-          not endorse any clinic.
+        <p className="border-t border-slate-200 pt-3 text-xs text-slate-500">
+          Results are not ranked by quality. Sorted by proximity and rating only. Findoc does not
+          endorse any clinic.
         </p>
       </div>
     </>

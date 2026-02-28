@@ -15,18 +15,15 @@ export default function InsuranceSelect({
 }: InsuranceSelectProps) {
   return (
     <div>
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-text-label mb-1"
-      >
-        Insurance provider <span className="text-text-muted font-normal">(optional)</span>
+      <label htmlFor={id} className="mb-2 block text-sm font-semibold text-slate-700">
+        Insurance provider <span className="font-normal text-slate-500">(optional)</span>
       </label>
       <select
         id={id}
         name="insurance"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-brand-border bg-white px-3 py-2 text-sm text-text-primary focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-soft-blue"
+        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-800 shadow-sm focus:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-100 transition"
         aria-label="Select your insurance provider"
       >
         <option value="">No insurance / pay privately</option>
