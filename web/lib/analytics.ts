@@ -45,6 +45,9 @@ export type AnalyticsEventName =
   // Feature usage
   | 'doctor_saved'
   | 'navigation_history_viewed'
+  | 'called_history_viewed'
+  | 'called_history_call_again_clicked'
+  | 'called_history_directions_clicked'
   // Counter transfer
   | 'navigation_counter_transferred'
 

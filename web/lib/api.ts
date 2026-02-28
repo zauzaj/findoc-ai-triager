@@ -105,6 +105,19 @@ export interface SavedPlace {
   saved_at: string
 }
 
+export interface CalledPlace {
+  google_place_id: string
+  name?: string
+  address?: string
+  phone?: string
+  maps_url?: string
+  times_called: number
+  last_called_at: string
+  specialty?: string
+  insurance?: string
+  partial: boolean
+}
+
 export interface InsuranceProvider {
   id: number
   name: string
@@ -212,6 +225,13 @@ export async function getSavedPlaces(token: string): Promise<SavedPlace[]> {
   if (!res.ok) throw new Error('Failed to fetch saved places')
   const data = await res.json()
   return data.saved_places
+}
+
+export async function getCalledPlaces(token: string): Promise<CalledPlace[]> {
+  const res = await fetch(`${API}/called_places`, { headers: authHeaders(token) })
+  if (!res.ok) throw new Error('Failed to fetch called places')
+  const data = await res.json()
+  return data.called_places
 }
 
 // ── Insurance ─────────────────────────────────────────────────────────────
