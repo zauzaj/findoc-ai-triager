@@ -22,7 +22,6 @@ interface ResultsPageProps {
     lng?: string
     insurance?: string
     urgency?: string
-    /** Server-side nav count after this navigation (passed from /navigate for signed-in users) */
     nav_count?: string
   }
 }
@@ -31,23 +30,25 @@ export default function ResultsPage({ searchParams }: ResultsPageProps) {
   const { specialist = '', lat, lng, insurance, urgency, nav_count } = searchParams
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <div className="mb-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+      <div className="mb-8 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
         <Link
           href="/navigate"
-          className="text-xs text-text-muted hover:text-text-primary transition-colors"
+          className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
           aria-label="Back to specialist guidance"
         >
           &larr; Back to guidance
         </Link>
 
         <div className="mt-3">
-          <h1 className="text-2xl font-semibold text-text-primary mb-1">
+          <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
             {specialist ? `${specialist} clinics` : 'Clinics near you'}
           </h1>
-          {insurance && (
-            <p className="text-sm text-text-muted">Filtered by {insurance} insurance</p>
-          )}
+          <p className="mt-1 text-sm text-slate-600">
+            {insurance
+              ? `Filtered by ${insurance} insurance`
+              : 'Smart matches based on your symptoms and location.'}
+          </p>
         </div>
       </div>
 

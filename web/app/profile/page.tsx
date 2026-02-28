@@ -19,7 +19,6 @@ export default function ProfilePage() {
     if (!loading && !user) router.replace('/auth/signin')
   }, [user, loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Detect post-checkout redirect (?upgraded=1)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('upgraded') === '1') {
@@ -27,19 +26,19 @@ export default function ProfilePage() {
       track('checkout_completed', { plan_type: 'premium', price_aed: UPGRADE_PRICE_AED })
       window.history.replaceState({}, '', '/profile')
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading || !user) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 rounded-full border-2 border-primary-blue border-t-transparent animate-spin" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
       </div>
     )
   }
 
-  const isPremium  = user.plan === 'premium'
-  const used       = user.navigations_this_month ?? 0
-  const remaining  = Math.max(0, FREE_NAV_LIMIT - used)
+  const isPremium = user.plan === 'premium'
+  const used = user.navigations_this_month ?? 0
+  const remaining = Math.max(0, FREE_NAV_LIMIT - used)
   const cancelling = user.ls_subscription_status === 'cancelled' && isPremium
 
   async function handleUpgrade() {
@@ -56,40 +55,36 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <h1 className="text-2xl font-semibold text-primary-blue mb-6">Your Profile</h1>
+    <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
+      <h1 className="mb-6 text-3xl font-extrabold text-slate-900">Your Profile</h1>
 
-      {/* Post-checkout success banner */}
       {upgraded && (
-        <div className="mb-5 rounded border border-primary-green bg-soft-green p-4 flex items-start gap-3">
+        <div className="mb-5 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
           <span className="text-xl">🎉</span>
           <div>
-            <p className="font-semibold text-primary-blue text-sm">Welcome to Premium!</p>
-            <p className="text-xs text-text-muted mt-0.5">
-              Unlimited navigations and the full clinic list are now unlocked.
+            <p className="text-sm font-semibold text-emerald-800">Welcome to Premium!</p>
+            <p className="mt-0.5 text-xs text-emerald-700/90">
+              Unlimited navigations and full clinic results are now unlocked.
             </p>
           </div>
         </div>
       )}
 
-      {/* User card */}
-      <div className="bg-white rounded border-2 border-card-border p-6 shadow-card mb-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-primary-blue flex items-center justify-center text-white text-xl font-bold select-none flex-shrink-0">
+      <div className="mb-4 flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-xl font-bold text-white select-none">
           {(user.name ?? user.email).charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-text-primary truncate">{user.name ?? 'No name'}</p>
-          <p className="text-sm text-text-muted truncate">{user.email}</p>
+          <p className="truncate font-semibold text-slate-900">{user.name ?? 'No name'}</p>
+          <p className="truncate text-sm text-slate-600">{user.email}</p>
           {user.emirate && (
-            <p className="text-xs text-text-muted">
+            <p className="text-xs text-slate-500">
               {user.emirate}{user.insurance_provider ? ` · ${user.insurance_provider}` : ''}
             </p>
           )}
           <span
-            className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${
-              isPremium
-                ? 'bg-primary-blue text-white'
-                : 'bg-soft-blue text-primary-blue'
+            className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+              isPremium ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
             }`}
           >
             {isPremium ? 'Premium' : 'Free plan'}
@@ -97,24 +92,21 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Plan / billing card */}
-      <div className="bg-white rounded border-2 border-card-border p-5 shadow-card mb-6">
-        <h2 className="text-sm font-semibold text-text-primary mb-3">Your plan</h2>
+      <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Patient pricing</h2>
 
         {isPremium ? (
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-sm text-text-muted">
-                {cancelling
-                  ? 'Your subscription is cancelled and will expire at the end of this billing period. Premium access continues until then.'
-                  : 'Unlimited navigations and full clinic lists for your insurance network.'}
-              </p>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <p className="text-sm text-slate-600">
+              {cancelling
+                ? 'Your subscription is cancelled and will expire at the end of this billing period. Premium access continues until then.'
+                : 'Unlimited navigations and full clinic lists are active on your account.'}
+            </p>
             {cancelling && (
               <button
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
-                className="rounded bg-primary-orange px-4 py-2 text-xs font-semibold text-white hover:bg-primary-orange-hover transition-colors disabled:opacity-60"
+                className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition-colors disabled:opacity-60"
               >
                 {checkoutLoading ? 'Loading…' : `Reactivate — AED ${UPGRADE_PRICE_AED}/mo`}
               </button>
@@ -122,67 +114,64 @@ export default function ProfilePage() {
           </div>
         ) : (
           <>
-            {/* Usage bar */}
             <div className="mb-4">
-              <div className="flex justify-between text-xs text-text-muted mb-1.5">
+              <div className="mb-1.5 flex justify-between text-xs text-slate-500">
                 <span>{used} of {FREE_NAV_LIMIT} navigations used this month</span>
                 <span>{remaining} remaining</span>
               </div>
-              <div className="h-2 rounded-full bg-surface-subtle overflow-hidden">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    remaining === 0 ? 'bg-status-error-text' : 'bg-primary-blue'
+                    remaining === 0 ? 'bg-red-500' : 'bg-slate-900'
                   }`}
                   style={{ width: `${Math.min(100, (used / FREE_NAV_LIMIT) * 100)}%` }}
                 />
               </div>
             </div>
 
-            {/* Upgrade CTA */}
-            <div className="rounded border border-soft-blue bg-soft-blue p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center">
               <div>
-                <p className="text-sm font-semibold text-primary-blue">Upgrade to Premium</p>
-                <ul className="text-xs text-text-muted mt-0.5 space-y-0.5">
-                  <li>Unlimited navigations every month</li>
-                  <li>Full clinic list for your insurance network</li>
-                  <li>Save doctors + full navigation history</li>
+                <p className="text-sm font-semibold text-slate-900">Upgrade to Premium — AED {UPGRADE_PRICE_AED}/month</p>
+                <ul className="mt-1 space-y-0.5 text-xs text-slate-600">
+                  <li>• Unlimited navigations every month</li>
+                  <li>• Full clinic list for your insurance network</li>
+                  <li>• Save doctors + full navigation history</li>
                 </ul>
               </div>
               <button
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
-                className="rounded bg-primary-orange px-5 py-2 text-sm font-semibold text-white hover:bg-primary-orange-hover transition-colors disabled:opacity-60 flex-shrink-0"
+                className="flex-shrink-0 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors disabled:opacity-60"
               >
-                {checkoutLoading ? 'Opening checkout…' : `AED ${UPGRADE_PRICE_AED}/month`}
+                {checkoutLoading ? 'Opening checkout…' : 'Upgrade now'}
               </button>
             </div>
-            <p className="text-xs text-text-muted mt-2">No contracts. Cancel anytime.</p>
+            <p className="mt-2 text-xs text-slate-500">No contracts. Cancel anytime.</p>
           </>
         )}
       </div>
 
-      {/* Quick links */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[
           { href: '/profile/history', label: 'Search history', emoji: '🔍', premiumOnly: true },
-          { href: '/profile/saved',   label: 'Saved clinics',  emoji: '❤️', premiumOnly: true },
-          { href: '/profile/called',  label: 'Called clinics', emoji: '📞', premiumOnly: false },
+          { href: '/profile/saved', label: 'Saved clinics', emoji: '❤️', premiumOnly: true },
+          { href: '/profile/called', label: 'Called clinics', emoji: '📞', premiumOnly: false },
         ].map(({ href, label, emoji, premiumOnly }) => (
           <Link
             key={href}
             href={premiumOnly && !isPremium ? '#' : href}
             onClick={premiumOnly && !isPremium ? (e) => { e.preventDefault(); handleUpgrade() } : undefined}
-            className={`bg-white rounded border-2 border-card-border p-4 shadow-card flex items-center gap-3 transition-[border-color] duration-300 ${
+            className={`flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm transition ${
               premiumOnly && !isPremium
-                ? 'opacity-60 cursor-pointer hover:border-primary-orange'
-                : 'hover:border-primary-blue'
+                ? 'cursor-pointer border-slate-200 opacity-70 hover:border-slate-300'
+                : 'border-slate-200 hover:border-slate-300'
             }`}
           >
             <span className="text-2xl">{emoji}</span>
             <div className="min-w-0">
-              <span className="text-sm font-medium text-text-primary block">{label}</span>
+              <span className="block text-sm font-medium text-slate-900">{label}</span>
               {premiumOnly && !isPremium && (
-                <span className="text-xs text-text-muted">Premium only</span>
+                <span className="text-xs text-slate-500">Premium only</span>
               )}
             </div>
           </Link>
@@ -191,7 +180,7 @@ export default function ProfilePage() {
 
       <button
         onClick={signOut}
-        className="text-sm text-text-muted hover:text-emergency-red transition-colors"
+        className="text-sm text-slate-500 hover:text-red-600 transition-colors"
       >
         Sign out
       </button>
