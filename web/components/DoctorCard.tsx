@@ -15,31 +15,28 @@ interface DoctorCardProps {
 
 export default function DoctorCard({ place, insurance, specialty }: DoctorCardProps) {
   const { user, token } = useAuth()
-  const { track }       = useAnalytics()
-  const [showMap, setShowMap]   = useState(false)
-  const [saved,   setSaved]     = useState(false)
-  const [saving,  setSaving]    = useState(false)
+  const { track } = useAnalytics()
+  const [showMap, setShowMap] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const hasInsurance =
     insurance &&
     place.insurance_accepted.some((i) => i.toLowerCase() === insurance.toLowerCase())
 
   const directionsUrl = buildDirectionsUrl(place)
-  const embedUrl      = buildEmbedUrl(place)
+  const embedUrl = buildEmbedUrl(place)
 
   const isPremium = user?.plan === 'premium'
-  const placeId   = clinicPlaceId(place)
+  const placeId = clinicPlaceId(place)
 
   async function handleSave() {
-    // Not signed in → go to sign-in with return-to
     if (!user || !token) {
-      // Organic trigger: "Sign in to save your shortlist"
       const returnTo = encodeURIComponent(window.location.pathname + window.location.search)
       window.location.href = `/auth/signin?return_to=${returnTo}`
       return
     }
 
-    // Signed in but not premium → show upgrade nudge (save is premium-only)
     if (!isPremium) {
       window.location.href = '/profile'
       return
@@ -55,7 +52,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
         setSaved(true)
         track('doctor_saved', {
           specialist_type: specialty ?? null,
-          emirate:         user.emirate ?? null,
+          emirate: user.emirate ?? null,
         })
       }
     } catch {
@@ -66,38 +63,37 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
   }
 
   return (
-    <article className="bg-white rounded border-2 border-card-border p-5 shadow-card transition-[border-color] duration-300 hover:border-primary-blue">
-      <div className="flex items-start justify-between gap-3 mb-1">
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
+      <div className="mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-semibold text-primary-blue text-base truncate">{place.name}</h3>
-          <p className="text-sm text-text-muted mt-0.5 truncate">{place.address}</p>
+          <h3 className="truncate text-base font-bold text-slate-900">{place.name}</h3>
+          <p className="mt-0.5 truncate text-sm text-slate-500">{place.address}</p>
         </div>
 
-        <div className="flex items-start gap-2 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-start gap-2">
           <div className="text-right">
             {place.rating > 0 && (
-              <p className="text-sm font-medium text-text-primary" aria-label={`Rating: ${formatRating(place.rating)} out of 5`}>
+              <p className="text-sm font-semibold text-slate-800" aria-label={`Rating: ${formatRating(place.rating)} out of 5`}>
                 ★ {formatRating(place.rating)}
               </p>
             )}
-            <p className="text-xs text-text-muted mt-0.5">{formatDistance(place.distance)}</p>
+            <p className="mt-0.5 text-xs text-slate-500">{formatDistance(place.distance)}</p>
           </div>
 
-          {/* Save button — for premium users; nudges others to sign in / upgrade */}
           <button
             onClick={handleSave}
             disabled={saving}
             aria-label={saved ? `Unsave ${place.name}` : `Save ${place.name}`}
             title={
-              !user      ? 'Sign in to save doctors' :
-              !isPremium ? 'Upgrade to Premium to save doctors' :
-              saved      ? 'Remove from saved' : 'Save doctor'
+              !user ? 'Sign in to save doctors' :
+                !isPremium ? 'Upgrade to Premium to save doctors' :
+                  saved ? 'Remove from saved' : 'Save doctor'
             }
-            className={`p-1.5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-1 ${
+            className={`rounded-full p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 ${
               saved
-                ? 'text-emergency-red hover:text-emergency-red/70'
-                : 'text-text-muted hover:text-primary-blue'
-            } ${saving ? 'opacity-50 cursor-wait' : ''}`}
+                ? 'text-red-500 hover:text-red-400'
+                : 'text-slate-400 hover:text-slate-700'
+            } ${saving ? 'cursor-wait opacity-50' : ''}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -105,7 +101,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
               fill={saved ? 'currentColor' : 'none'}
               stroke="currentColor"
               strokeWidth={2}
-              className="w-4 h-4"
+              className="h-4 w-4"
               aria-hidden="true"
             >
               <path
@@ -118,35 +114,26 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
         </div>
       </div>
 
-      {place.featured && (
-        <div className="mb-2">
-          <span
-            className="inline-flex items-center gap-1 rounded-full bg-primary-blue/10 text-primary-blue text-xs font-semibold px-2.5 py-0.5"
-            aria-label="Featured clinic"
-          >
+      <div className="mb-3 flex flex-wrap gap-2">
+        {place.featured && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white" aria-label="Featured clinic">
             ★ Featured
           </span>
-        </div>
-      )}
+        )}
 
-      {hasInsurance && (
-        <div className="mb-2">
-          <span
-            className="inline-flex items-center gap-1 rounded-full bg-soft-green text-primary-green text-xs font-medium px-2.5 py-0.5"
-            aria-label={`Accepts ${insurance} insurance`}
-          >
+        {hasInsurance && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700" aria-label={`Accepts ${insurance} insurance`}>
             <span aria-hidden="true">✓</span> {insurance} accepted
           </span>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="flex flex-wrap gap-2 mt-3">
-        {/* Phone — never gated, no modal, connects immediately */}
+      <div className="mt-3 flex flex-wrap gap-2.5">
         {place.phone && (
           <a
             href={`tel:${place.phone}`}
             onClick={() => trackEvent('phone_click', { google_place_id: placeId })}
-            className="inline-flex items-center rounded bg-primary-blue px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-blue-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2"
+            className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
             aria-label={`Call ${place.name}`}
           >
             Call Clinic
@@ -159,7 +146,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('directions', { google_place_id: placeId })}
-            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:border-slate-300 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
             aria-label={`Get directions to ${place.name}`}
           >
             Get Directions
@@ -169,7 +156,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
         {embedUrl && (
           <button
             onClick={() => setShowMap((v) => !v)}
-            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:border-slate-300 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
             aria-expanded={showMap}
             aria-label={showMap ? `Close map for ${place.name}` : `Open map for ${place.name}`}
           >
@@ -183,7 +170,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('website', { google_place_id: placeId })}
-            className="inline-flex items-center rounded border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:border-slate-300 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
             aria-label={`Visit website of ${place.name}`}
           >
             Visit Website
@@ -192,7 +179,7 @@ export default function DoctorCard({ place, insurance, specialty }: DoctorCardPr
       </div>
 
       {showMap && embedUrl && (
-        <div className="mt-4 -mx-5 -mb-5 border-t border-card-border overflow-hidden rounded-b">
+        <div className="-mx-5 -mb-5 mt-4 overflow-hidden border-t border-slate-200">
           <iframe
             src={embedUrl}
             width="100%"
