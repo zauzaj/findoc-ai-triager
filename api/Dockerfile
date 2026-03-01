@@ -2,6 +2,7 @@ FROM ruby:3.3-alpine
 
 RUN apk add --no-cache \
       build-base \
+      yaml-dev \
       postgresql-dev \
       postgresql-client \
       tzdata \
