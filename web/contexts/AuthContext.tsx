@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { AuthUser, getMe, mergeAnonymousCount } from '@/lib/api'
@@ -20,6 +20,10 @@ const AuthContext = createContext<AuthContextValue>({
   needsOnboarding: false,
   setAuth: async () => {}, updateUser: () => {}, signOut: () => {},
 })
+
+export function useAuth() {
+  return useContext(AuthContext)
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user,            setUser]            = useState<AuthUser | null>(null)
@@ -97,4 +101,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export const useAuth = () => useContext(AuthContext)

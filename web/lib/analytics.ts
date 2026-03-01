@@ -64,6 +64,8 @@ export interface AnalyticsContext {
   emirate?: string | null
   /** Insurance selected during this session */
   insurance_selected?: string | null
+  /** UI locale / language code */
+  language?: string | null
 }
 
 // ── track() — the core function ──────────────────────────────────────────────
