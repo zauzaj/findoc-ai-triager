@@ -1,3 +1,5 @@
+class AuthenticationError < StandardError; end
+
 class ApplicationController < ActionController::API
   rescue_from AuthenticationError,             with: :render_unauthorized
   rescue_from ActiveRecord::RecordNotFound,    with: :render_not_found
@@ -54,5 +56,3 @@ class ApplicationController < ActionController::API
     render json: { error: "Bad Request", message: e.message }, status: :bad_request
   end
 end
-
-class AuthenticationError < StandardError; end

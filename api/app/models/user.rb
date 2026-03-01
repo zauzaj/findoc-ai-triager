@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  has_secure_password validations: false
+
   PLANS     = %w[free premium].freeze
   LOCALES   = %w[en ar].freeze
   PROVIDERS = %w[google apple email].freeze

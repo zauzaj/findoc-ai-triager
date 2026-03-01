@@ -23,10 +23,10 @@ class LemonsqueezyService
             name:  user.name.presence || user.email.split("@").first,
             custom: { user_id: user.id.to_s }
           },
-          checkout_options: {
+          checkout_options: {},
+          product_options: {
             redirect_url: redirect_url
-          }.compact,
-          product_options: {}
+          }.compact
         },
         relationships: {
           store:   { data: { type: "stores",   id: store_id.to_s   } },

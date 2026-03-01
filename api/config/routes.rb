@@ -9,6 +9,8 @@ Rails.application.routes.draw do
       # Auth
       post "auth/google",              to: "auth#google"
       post "auth/apple",               to: "auth#apple"
+      post "auth/signup",              to: "auth#signup"
+      post "auth/password_login",      to: "auth#password_login"
       post "auth/magic_link",          to: "auth#magic_link"
       get  "auth/magic_link_verify",   to: "auth#magic_link_verify"
       get  "auth/me",                  to: "auth#me"

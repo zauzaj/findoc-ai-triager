@@ -4,16 +4,17 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { createCheckout } from '@/lib/api'
+import { createCheckout, getMe } from '@/lib/api'
 import { FREE_NAV_LIMIT, UPGRADE_PRICE_AED } from '@/lib/constants'
 import { useAnalytics } from '@/hooks/useAnalytics'
 
 export default function ProfilePage() {
-  const { user, token, loading, signOut } = useAuth()
+  const { user, token, loading, signOut, updateUser } = useAuth()
   const { track } = useAnalytics()
   const router = useRouter()
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [upgraded, setUpgraded] = useState(false)
+  const [pollForUpgrade, setPollForUpgrade] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) router.replace('/auth/signin')
@@ -23,10 +24,43 @@ export default function ProfilePage() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('upgraded') === '1') {
       setUpgraded(true)
+      setPollForUpgrade(true)
       track('checkout_completed', { plan_type: 'premium', price_aed: UPGRADE_PRICE_AED })
       window.history.replaceState({}, '', '/profile')
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!pollForUpgrade || !token) return
+
+    let cancelled = false
+    let attempts = 0
+    const maxAttempts = 8
+
+    async function refresh() {
+      if (cancelled) return
+      attempts += 1
+      try {
+        const latestUser = await getMe(token)
+        updateUser(latestUser)
+        if (latestUser.plan === 'premium') {
+          setPollForUpgrade(false)
+          return
+        }
+      } catch {
+        // Ignore transient fetch errors; polling retries below.
+      }
+
+      if (!cancelled && attempts < maxAttempts) {
+        window.setTimeout(refresh, 2000)
+      } else {
+        setPollForUpgrade(false)
+      }
+    }
+
+    refresh()
+    return () => { cancelled = true }
+  }, [pollForUpgrade, token, updateUser])
 
   if (loading || !user) {
     return (

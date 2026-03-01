@@ -3,6 +3,42 @@ module Api
     class AuthController < ApplicationController
       before_action :authenticate!, only: [:me, :merge_anonymous]
 
+      def signup
+        email = params.require(:email).downcase.strip
+        password = params.require(:password)
+        name = params[:name].presence || email.split("@").first
+
+        if password.length < 8
+          return render json: { error: "Password must be at least 8 characters" }, status: :unprocessable_entity
+        end
+
+        user = User.find_by(email: email)
+        if user.nil?
+          user = User.new(email: email, provider: "email", name: name, password: password)
+        elsif user.provider != "email"
+          return render json: { error: "This email is linked to social sign-in. Use that provider." }, status: :conflict
+        elsif user.password_digest.present?
+          return render json: { error: "Account already exists. Please sign in." }, status: :conflict
+        else
+          user.assign_attributes(name: user.name.presence || name, password: password)
+        end
+
+        user.save!
+        render json: auth_response(user), status: :created
+      end
+
+      def password_login
+        email = params.require(:email).downcase.strip
+        password = params.require(:password)
+
+        user = User.find_by(email: email)
+        unless user&.provider == "email" && user.authenticate(password)
+          return render json: { error: "Invalid email or password" }, status: :unauthorized
+        end
+
+        render json: auth_response(user)
+      end
+
       def google
         id_token = params.require(:id_token)
         payload  = GoogleAuthService.verify(id_token)

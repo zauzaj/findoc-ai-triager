@@ -151,6 +151,33 @@ export async function requestMagicLink(email: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to send magic link')
 }
 
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  name?: string
+): Promise<{ token: string; user: AuthUser }> {
+  const res = await fetch(`${API}/auth/signup`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ email, password, name }),
+  })
+  if (!res.ok) throw new Error('Sign-up failed')
+  return res.json()
+}
+
+export async function signInWithPassword(
+  email: string,
+  password: string
+): Promise<{ token: string; user: AuthUser }> {
+  const res = await fetch(`${API}/auth/password_login`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ email, password }),
+  })
+  if (!res.ok) throw new Error('Invalid email or password')
+  return res.json()
+}
+
 export async function verifyMagicLink(token: string): Promise<{ token: string; user: AuthUser }> {
   const res = await fetch(`${API}/auth/magic_link_verify?token=${encodeURIComponent(token)}`)
   if (!res.ok) throw new Error('Invalid or expired magic link')

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_23_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_28_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -214,6 +214,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_23_000003) do
     t.string "ls_subscription_id"
     t.string "ls_subscription_status"
     t.bigint "current_plan_id"
+    t.string "password_digest"
     t.index ["current_plan_id"], name: "index_users_on_current_plan_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["ls_subscription_id"], name: "index_users_on_ls_subscription_id"
